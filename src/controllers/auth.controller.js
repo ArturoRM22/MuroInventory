@@ -1,8 +1,8 @@
 const bcrypt = require('bcryptjs');
 const jwt = require('jsonwebtoken');
-const { JWT_SECRET, JWT_EXPIRES_IN } = require('../config');
+const { JWT_SECRET, JWT_EXPIRES_IN, BCRYPT_ROUNDS } = require('../config');
 const { query } = require('../db/query');
-const { isNonEmptyString, collectErrors } = require('../utils/validation');
+const { isNonEmptyString, isOneOf, collectErrors } = require('../utils/validation');
 
 const COOKIE_NAME = 'muro_token';
 
@@ -11,8 +11,7 @@ function signToken(user) {
     {
       sub: user.id,
       name: user.name,
-      role: user.role,
-      tortilleria_id: user.tortilleria_id,
+      role: user.role
     },
     JWT_SECRET,
     { expiresIn: JWT_EXPIRES_IN }
@@ -38,6 +37,38 @@ function msFromJWT(expiresIn) {
   return value * (multipliers[unit] || multipliers.d);
 }
 
+async function register(req, res, next) {
+  try {
+    const { name, password, role } = req.body || {};
+
+    const errors = collectErrors({
+      name: isNonEmptyString(name),
+      password: isNonEmptyString(password),
+      role: isOneOf(role, ['manager', 'user']),
+    });
+
+    if (errors) {
+      return res.status(400).json({ error: 'Validation failed', details: errors });
+    }
+
+    const dup = await query('SELECT id FROM users WHERE name = $1', [name.trim()]);
+    if (dup.rows.length > 0) {
+      return res.status(409).json({ error: 'Username already exists' });
+    }
+
+    const hash = await bcrypt.hash(password, BCRYPT_ROUNDS);
+
+    const result = await query(
+      'INSERT INTO users (name, password, role) VALUES ($1, $2, $3) RETURNING id, name, role',
+      [name.trim(), hash, role]
+    );
+
+    return res.status(201).json({ data: result.rows[0] });
+  } catch (err) {
+    return next(err);
+  }
+}
+
 async function login(req, res, next) {
   try {
     const { name, password } = req.body || {};
@@ -52,7 +83,7 @@ async function login(req, res, next) {
     }
 
     const result = await query(
-      'SELECT id, name, role, tortilleria_id, password FROM users WHERE name = $1',
+      'SELECT id, name, role, password FROM users WHERE name = $1',
       [name.trim()]
     );
 
@@ -86,4 +117,4 @@ async function logout(req, res) {
   return res.json({ ok: true });
 }
 
-module.exports = { login, logout };
+module.exports = { register, login, logout };

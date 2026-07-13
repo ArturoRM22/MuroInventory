@@ -10,3 +10,4 @@ router.patch('/:id', requireAuth, requireRole('manager'), tortilleriasController
 router.delete('/:id', requireAuth, requireRole('manager'), tortilleriasController.deleteTortilleria);
 
 module.exports = router;
+2
