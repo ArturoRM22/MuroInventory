@@ -1,6 +1,7 @@
 const { query } = require('../db/query');
 const {
   isISODate,
+  isNonEmptyString,
   isNonNegativeInteger,
   isOneOf,
   isId,
@@ -43,7 +44,7 @@ async function listMovements(req, res, next) {
     }
 
     const whereClause = conditions.length ? `WHERE ${conditions.join(' AND ')}` : '';
-    const sql = `SELECT id, day, type, sacks, tortilleria_id, created_by, created_at
+    const sql = `SELECT id, day, type, sacks, tortilleria_id, employee_name, created_by, created_at
                  FROM movements
                  ${whereClause}
                  ORDER BY day DESC, created_at DESC`;
@@ -57,13 +58,14 @@ async function listMovements(req, res, next) {
 
 async function createMovement(req, res, next) {
   try {
-    const { day, type, sacks, tortilleria_id } = req.body || {};
+    const { day, type, sacks, tortilleria_id, employee_name } = req.body || {};
 
     const errors = collectErrors({
       day: isISODate(day),
       type: isOneOf(type, MOVEMENT_TYPES),
       sacks: isNonNegativeInteger(sacks),
       tortilleria_id: isId(tortilleria_id),
+      employee_name: isNonEmptyString(employee_name),
     });
 
     if (errors) {
@@ -103,10 +105,10 @@ async function createMovement(req, res, next) {
     }
 
     const result = await query(
-      `INSERT INTO movements (day, type, sacks, tortilleria_id, created_by)
-       VALUES ($1, $2, $3, $4, $5)
-       RETURNING id, day, type, sacks, tortilleria_id, created_by, created_at`,
-      [day, type, sacks, tortilleria_id, req.user.sub]
+      `INSERT INTO movements (day, type, sacks, tortilleria_id, employee_name, created_by)
+       VALUES ($1, $2, $3, $4, $5, $6)
+       RETURNING id, day, type, sacks, tortilleria_id, employee_name, created_by, created_at`,
+      [day, type, sacks, tortilleria_id, employee_name.trim(), req.user.sub]
     );
 
     return res.status(201).json({ data: result.rows[0] });

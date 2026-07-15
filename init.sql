@@ -28,6 +28,7 @@ CREATE TABLE movements (
   type text NOT NULL CHECK (type IN ('llegada', 'uso')),
   sacks int NOT NULL CHECK (sacks >= 0),
   tortilleria_id INT NOT NULL REFERENCES tortillerias(id),
+  employee_name text NOT NULL,
   created_by INT NOT NULL REFERENCES users(id),
   created_at timestamptz NOT NULL DEFAULT now()
 );
