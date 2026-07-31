@@ -14,6 +14,7 @@ List individual inventory movement records, filterable.
 
 | Param | Type | Description |
 |---|---|---|
+| `day` | `YYYY-MM-DD` | Exact match on `day` (e.g. a single day's registrations) |
 | `from` | `YYYY-MM-DD` | Lower bound on `day` |
 | `to` | `YYYY-MM-DD` | Upper bound on `day` |
 | `tortilleria_id` | positive int | Filter by tortilleria |

@@ -123,7 +123,7 @@ export default function QuickEntryForm({ currentStock, onSuccess }: QuickEntryFo
 
         <div>
           <label htmlFor="employee" className="mb-1 block text-sm font-medium text-gray-600">
-            Empleado
+            Nombre de quien registra
           </label>
           <input
             id="employee"

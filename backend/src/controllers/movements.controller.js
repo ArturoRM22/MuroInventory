@@ -12,10 +12,17 @@ const MOVEMENT_TYPES = ['llegada', 'uso'];
 
 async function listMovements(req, res, next) {
   try {
-    const { from, to, tortilleria_id } = req.query;
+    const { from, to, day, tortilleria_id } = req.query;
 
     const conditions = [];
     const values = [];
+
+    if (day) {
+      const err = isISODate(day);
+      if (err) return res.status(400).json({ error: 'Invalid day date', details: { day: err } });
+      conditions.push(`day = $${conditions.length + 1}`);
+      values.push(day);
+    }
 
     if (from) {
       const err = isISODate(from);
@@ -44,7 +51,7 @@ async function listMovements(req, res, next) {
     }
 
     const whereClause = conditions.length ? `WHERE ${conditions.join(' AND ')}` : '';
-    const sql = `SELECT id, day, type, sacks, tortilleria_id, employee_name, created_by, created_at
+    const sql = `SELECT id, day::text AS day, type, sacks, tortilleria_id, employee_name, created_by, created_at
                  FROM movements
                  ${whereClause}
                  ORDER BY day DESC, created_at DESC`;
@@ -107,7 +114,7 @@ async function createMovement(req, res, next) {
     const result = await query(
       `INSERT INTO movements (day, type, sacks, tortilleria_id, employee_name, created_by)
        VALUES ($1, $2, $3, $4, $5, $6)
-       RETURNING id, day, type, sacks, tortilleria_id, employee_name, created_by, created_at`,
+       RETURNING id, day::text AS day, type, sacks, tortilleria_id, employee_name, created_by, created_at`,
       [day, type, sacks, tortilleria_id, employee_name.trim(), req.user.sub]
     );
 
