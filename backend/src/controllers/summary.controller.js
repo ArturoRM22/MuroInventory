@@ -1,5 +1,6 @@
 const { query } = require('../db/query');
 const { isISODate, isId, collectErrors } = require('../utils/validation');
+const { isTortilleriaAccessible } = require('../middleware/auth');
 
 const SUMMARY_SQL = `
   WITH initial AS (
@@ -23,7 +24,7 @@ const SUMMARY_SQL = `
            COALESCE(SUM(llegadas - usos) OVER (ORDER BY day ROWS BETWEEN UNBOUNDED PRECEDING AND 1 PRECEDING), 0) AS prev_net
     FROM daily
   )
-  SELECT day,
+  SELECT day::text AS day,
          (SELECT initial_stock FROM initial) + (SELECT net FROM prior_net) + prev_net AS inicio,
          llegadas,
          usos,
@@ -47,7 +48,7 @@ const TODAY_SQL = `
     FROM movements
     WHERE tortilleria_id = $1 AND day = CURRENT_DATE
   )
-  SELECT CURRENT_DATE AS day,
+  SELECT CURRENT_DATE::text AS day,
          (SELECT initial_stock FROM initial) + (SELECT net FROM prior_net) AS inicio,
          (SELECT llegadas FROM today_agg) AS llegadas,
          (SELECT usos FROM today_agg) AS usos,
@@ -83,6 +84,10 @@ async function getSummary(req, res, next) {
       return res.status(400).json({ error: tortErr });
     }
 
+    if (!(await isTortilleriaAccessible(req.user.sub, Number(tortilleria_id)))) {
+      return res.status(403).json({ error: 'You do not have access to this tortilleria' });
+    }
+
     const start = from || '1900-01-01';
     const end = to || '9999-12-31';
 
@@ -108,6 +113,10 @@ async function getToday(req, res, next) {
     const tortErr = await validateTortilleria(tortilleria_id);
     if (tortErr) {
       return res.status(400).json({ error: tortErr });
+    }
+
+    if (!(await isTortilleriaAccessible(req.user.sub, Number(tortilleria_id)))) {
+      return res.status(403).json({ error: 'You do not have access to this tortilleria' });
     }
 
     const result = await query(TODAY_SQL, [tortilleria_id]);

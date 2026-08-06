@@ -2,7 +2,8 @@ const bcrypt = require('bcryptjs');
 const jwt = require('jsonwebtoken');
 const { JWT_SECRET, JWT_EXPIRES_IN, BCRYPT_ROUNDS } = require('../config');
 const { query } = require('../db/query');
-const { isNonEmptyString, isOneOf, collectErrors } = require('../utils/validation');
+const { isNonEmptyString, isOneOf, isId, collectErrors } = require('../utils/validation');
+const { isTortilleriaAccessible } = require('../middleware/auth');
 
 const COOKIE_NAME = 'muro_token';
 
@@ -39,12 +40,13 @@ function msFromJWT(expiresIn) {
 
 async function register(req, res, next) {
   try {
-    const { name, password, role } = req.body || {};
+    const { name, password, role, tortilleria_ids } = req.body || {};
 
     const errors = collectErrors({
       name: isNonEmptyString(name),
       password: isNonEmptyString(password),
-      role: isOneOf(role, ['manager', 'user']),
+      role: isOneOf(role, ['admin', 'user']),
+      tortilleria_ids: validateTortilleriaIds(tortilleria_ids),
     });
 
     if (errors) {
@@ -56,6 +58,16 @@ async function register(req, res, next) {
       return res.status(409).json({ error: 'Username already exists' });
     }
 
+    const uniqueIds = [...new Set(tortilleria_ids.map((id) => Number(id)))];
+    for (const id of uniqueIds) {
+      if (!(await isTortilleriaAccessible(req.user.sub, id))) {
+        return res.status(403).json({
+          error: 'You can only assign tortillerias you have access to',
+          details: { tortilleria_ids: `tortilleria ${id} is not accessible` },
+        });
+      }
+    }
+
     const hash = await bcrypt.hash(password, BCRYPT_ROUNDS);
 
     const result = await query(
@@ -63,7 +75,49 @@ async function register(req, res, next) {
       [name.trim(), hash, role]
     );
 
+    const userId = result.rows[0].id;
+    for (const id of uniqueIds) {
+      await query(
+        'INSERT INTO user_tortillerias (user_id, tortilleria_id) VALUES ($1, $2)',
+        [userId, id]
+      );
+    }
+
     return res.status(201).json({ data: result.rows[0] });
+  } catch (err) {
+    return next(err);
+  }
+}
+
+function validateTortilleriaIds(value) {
+  if (!Array.isArray(value) || value.length === 0) {
+    return 'must be a non-empty array of tortilleria ids';
+  }
+  for (const id of value) {
+    const err = isId(id);
+    if (err) return `contains invalid id: ${id}`;
+  }
+  return null;
+}
+
+async function getUserTortillerias(userId) {
+  const result = await query(
+    `SELECT t.id, t.name, t.is_main, t.main_tortilleria_id, t.initial_stock
+     FROM tortillerias t
+     JOIN user_tortillerias ut ON ut.tortilleria_id = t.id
+     WHERE ut.user_id = $1
+     ORDER BY t.is_main DESC, t.name ASC`,
+    [userId]
+  );
+  return result.rows;
+}
+
+async function me(req, res, next) {
+  try {
+    const tortillerias = await getUserTortillerias(req.user.sub);
+    return res.json({
+      data: { id: req.user.sub, name: req.user.name, role: req.user.role, tortillerias },
+    });
   } catch (err) {
     return next(err);
   }
@@ -100,7 +154,7 @@ async function login(req, res, next) {
     const token = signToken(user);
     setTokenCookie(res, token);
 
-    return res.json({ name: user.name, role: user.role });
+    return res.json({ id: user.id, name: user.name, role: user.role });
   } catch (err) {
     return next(err);
   }
@@ -117,4 +171,4 @@ async function logout(req, res) {
   return res.json({ ok: true });
 }
 
-module.exports = { register, login, logout };
+module.exports = { register, login, logout, me };

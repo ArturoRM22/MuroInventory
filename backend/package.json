@@ -4,8 +4,8 @@
   "description": "Corn sack inventory API for a tortillería",
   "main": "src/server.js",
   "scripts": {
-    "start": "node src/server.js",
-    "dev": "node --watch src/server.js"
+    "prod": "NODE_ENV=prod node --watch src/server.js",
+    "dev": "NODE_ENV=dev node --watch src/server.js"
   },
   "dependencies": {
     "bcryptjs": "^3.0.3",

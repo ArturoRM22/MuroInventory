@@ -5,6 +5,6 @@ const movementsController = require('../controllers/movements.controller');
 
 router.get('/', requireAuth, movementsController.listMovements);
 router.post('/', requireAuth, movementsController.createMovement);
-router.delete('/:id', requireAuth, requireRole('manager'), movementsController.deleteMovement);
+router.delete('/:id', requireAuth, requireRole('admin'), movementsController.deleteMovement);
 
 module.exports = router;

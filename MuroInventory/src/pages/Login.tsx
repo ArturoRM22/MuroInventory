@@ -25,7 +25,10 @@ export default function Login() {
         return body
       })
       .then((body) => {
-        sessionStorage.setItem('user', JSON.stringify({ name: body.name, role: body.role }))
+        sessionStorage.setItem(
+          'user',
+          JSON.stringify({ id: body.id, name: body.name, role: body.role })
+        )
         navigate('/', { replace: true })
       })
       .catch((err) => {

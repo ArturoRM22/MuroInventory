@@ -94,7 +94,7 @@ Record a sack arrival (`llegada`) or usage (`uso`).
 
 ## `DELETE /api/movements/:id` — Delete movement
 
-**Role required**: `manager`
+**Role required**: `admin`
 
 Removes a movement record. Stock is recalculated on the fly, so deleting a movement effectively reverses it.
 
@@ -224,7 +224,7 @@ Index: `idx_movements_tort_day ON movements(tortilleria_id, day)`
 |---|---|
 | `id` | `SERIAL PRIMARY KEY` |
 | `name` | `text NOT NULL UNIQUE` |
-| `role` | `text NOT NULL CHECK (role IN ('manager', 'user'))` |
+| `role` | `text NOT NULL CHECK (role IN ('admin', 'user'))` |
 
 ---
 
@@ -234,7 +234,7 @@ Index: `idx_movements_tort_day ON movements(tortilleria_id, day)`
 |---|---|---|
 | `GET /api/movements` | required | any |
 | `POST /api/movements` | required | any |
-| `DELETE /api/movements/:id` | required | `manager` |
+| `DELETE /api/movements/:id` | required | `admin` |
 | `GET /api/movements/summary` | required | any |
 | `GET /api/movements/today` | required | any |
 

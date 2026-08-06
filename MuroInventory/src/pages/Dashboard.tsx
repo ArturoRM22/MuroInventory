@@ -1,14 +1,19 @@
-import { useEffect, useState } from 'react'
-import { useNavigate } from 'react-router-dom'
+import { useEffect, useCallback, useState } from 'react'
 import type { Movement, TodaySummary } from '../types'
+import { useTortilleria } from '../context/tortilleria'
 import SummaryCard from '../components/SummaryCard'
 import QuickEntryForm from '../components/QuickEntryForm'
 import TodayMovements from '../components/TodayMovements'
+import SummaryReport from '../components/SummaryReport'
+import { getJSON } from '../lib/api'
+import { getToday } from '../lib/date'
 
-const today = new Date().toISOString().split('T')[0]
+const today = getToday()
 
 export default function Dashboard() {
-  const navigate = useNavigate()
+  const { user, current } = useTortilleria()
+  const isAdmin = user?.role === 'admin'
+  const tortilleriaId = current?.id
   const [data, setData] = useState<TodaySummary | null>(null)
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
@@ -16,30 +21,12 @@ export default function Dashboard() {
   const [movementsLoading, setMovementsLoading] = useState(true)
   const [movementsError, setMovementsError] = useState<string | null>(null)
 
-  function getJSON(url: string): Promise<any | null> {
-    if (!sessionStorage.getItem('user')) {
-      navigate('/login', { replace: true })
-      return Promise.resolve(null)
-    }
-
-    return fetch(url, { credentials: 'include' })
-      .then((res) => {
-        if (res.status === 401) {
-          sessionStorage.removeItem('user')
-          navigate('/login', { replace: true })
-          return null
-        }
-        if (!res.ok) throw new Error(`Error ${res.status}`)
-        return res.json()
-      })
-      .then((json) => (json ? json.data : null))
-  }
-
-  function fetchToday() {
+  const fetchToday = useCallback(() => {
+    if (!tortilleriaId) return
     setLoading(true)
     setError(null)
 
-    getJSON('/api/movements/today?tortilleria_id=1')
+    getJSON(`/api/movements/today?tortilleria_id=${tortilleriaId}`)
       .then((json) => {
         setData(json)
         setLoading(false)
@@ -48,13 +35,14 @@ export default function Dashboard() {
         setError(err.message)
         setLoading(false)
       })
-  }
+  }, [tortilleriaId])
 
-  function fetchMovements() {
+  const fetchMovements = useCallback(() => {
+    if (!tortilleriaId) return
     setMovementsLoading(true)
     setMovementsError(null)
 
-    getJSON(`/api/movements?day=${today}&tortilleria_id=1`)
+    getJSON(`/api/movements?day=${today}&tortilleria_id=${tortilleriaId}`)
       .then((json) => {
         setMovements(json ?? [])
         setMovementsLoading(false)
@@ -63,18 +51,21 @@ export default function Dashboard() {
         setMovementsError(err.message)
         setMovementsLoading(false)
       })
-  }
+  }, [tortilleriaId])
 
-  function refresh() {
+  const refresh = useCallback(() => {
     fetchToday()
     fetchMovements()
-  }
+  }, [fetchToday, fetchMovements])
 
-  useEffect(() => { refresh() }, [])
+  useEffect(() => { refresh() }, [refresh])
 
   return (
     <div className="mx-auto max-w-4xl px-4 py-8">
-      <h1 className="mb-6 text-2xl font-semibold text-gray-800">Panel de Hoy: <span className="text-red-500" >{today}</span></h1>
+      <h1 className="mb-6 text-2xl font-semibold text-gray-800">
+        Panel de Hoy:{' '}
+        <span className="text-red-500">{current ? `${current.name} — ${today}` : today}</span>
+      </h1>
 
       {loading && (
         <div className="mb-8 grid grid-cols-2 gap-4 md:grid-cols-4">
@@ -113,7 +104,13 @@ export default function Dashboard() {
         <p className="mb-8 text-gray-500">Sin datos por hoy.</p>
       )}
 
-      <QuickEntryForm currentStock={data?.quedo ?? null} onSuccess={refresh} />
+      {current?.is_main && tortilleriaId && (
+        <QuickEntryForm
+          currentStock={data?.quedo ?? null}
+          tortilleriaId={tortilleriaId}
+          onSuccess={refresh}
+        />
+      )}
 
       <div className="mt-8">
         <TodayMovements
@@ -123,6 +120,12 @@ export default function Dashboard() {
           onRetry={fetchMovements}
         />
       </div>
+
+      {isAdmin && (
+        <div className="mt-8">
+          <SummaryReport />
+        </div>
+      )}
     </div>
   )
 }

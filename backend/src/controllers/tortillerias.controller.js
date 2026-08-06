@@ -7,12 +7,18 @@ const {
   isNonNegativeInteger,
   collectErrors,
 } = require('../utils/validation');
+const { isTortilleriaAccessible } = require('../middleware/auth');
 
 const SELECT = 'SELECT id, name, is_main, main_tortilleria_id, initial_stock FROM tortillerias';
 
 async function listTortillerias(req, res, next) {
   try {
-    const result = await query(`${SELECT} ORDER BY is_main DESC, name ASC`);
+    const result = await query(
+      `${SELECT}
+       WHERE id IN (SELECT tortilleria_id FROM user_tortillerias WHERE user_id = $1)
+       ORDER BY is_main DESC, name ASC`,
+      [req.user.sub]
+    );
     return res.json({ data: result.rows });
   } catch (err) {
     return next(err);
@@ -24,6 +30,10 @@ async function getTortilleriaById(req, res, next) {
     const idErr = isId(req.params.id);
     if (idErr) {
       return res.status(400).json({ error: 'Invalid tortilleria id', details: { id: idErr } });
+    }
+
+    if (!(await isTortilleriaAccessible(req.user.sub, Number(req.params.id)))) {
+      return res.status(403).json({ error: 'You do not have access to this tortilleria' });
     }
 
     const result = await query(`${SELECT} WHERE id = $1`, [req.params.id]);
@@ -63,6 +73,11 @@ async function createTortilleria(req, res, next) {
       [name.trim(), is_main, main_tortilleria_id || null, initial_stock ?? 0]
     );
 
+    await query(
+      'INSERT INTO user_tortillerias (user_id, tortilleria_id) VALUES ($1, $2)',
+      [req.user.sub, result.rows[0].id]
+    );
+
     return res.status(201).json({ data: result.rows[0] });
   } catch (err) {
     return next(err);
@@ -74,6 +89,10 @@ async function updateTortilleria(req, res, next) {
     const idErr = isId(req.params.id);
     if (idErr) {
       return res.status(400).json({ error: 'Invalid tortilleria id', details: { id: idErr } });
+    }
+
+    if (!(await isTortilleriaAccessible(req.user.sub, Number(req.params.id)))) {
+      return res.status(403).json({ error: 'You do not have access to this tortilleria' });
     }
 
     const { name, is_main, main_tortilleria_id, initial_stock } = req.body || {};
@@ -166,6 +185,10 @@ async function deleteTortilleria(req, res, next) {
     const idErr = isId(req.params.id);
     if (idErr) {
       return res.status(400).json({ error: 'Invalid tortilleria id', details: { id: idErr } });
+    }
+
+    if (!(await isTortilleriaAccessible(req.user.sub, Number(req.params.id)))) {
+      return res.status(403).json({ error: 'You do not have access to this tortilleria' });
     }
 
     const result = await query('DELETE FROM tortillerias WHERE id = $1 RETURNING id', [

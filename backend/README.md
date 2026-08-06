@@ -77,12 +77,12 @@ scripts/
 | POST | `/api/auth/login` | no | - |
 | GET | `/api/tortillerias` | yes | any |
 | GET | `/api/tortillerias/:id` | yes | any |
-| POST | `/api/tortillerias` | yes | manager |
-| PATCH | `/api/tortillerias/:id` | yes | manager |
-| DELETE | `/api/tortillerias/:id` | yes | manager |
+| POST | `/api/tortillerias` | yes | admin |
+| PATCH | `/api/tortillerias/:id` | yes | admin |
+| DELETE | `/api/tortillerias/:id` | yes | admin |
 | GET | `/api/movements` | yes | any |
 | POST | `/api/movements` | yes | any |
-| DELETE | `/api/movements/:id` | yes | manager |
+| DELETE | `/api/movements/:id` | yes | admin |
 | GET | `/api/movements/summary` | yes | any |
 | GET | `/api/movements/today` | yes | any |
 

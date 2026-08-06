@@ -1,14 +1,16 @@
 import { useState } from 'react'
+import { getToday } from '../lib/date'
 
 type MovementType = 'llegada' | 'uso'
 
 interface QuickEntryFormProps {
   currentStock: number | null
+  tortilleriaId: number
   onSuccess: () => void
 }
 
-export default function QuickEntryForm({ currentStock, onSuccess }: QuickEntryFormProps) {
-  const today = new Date().toISOString().split('T')[0]
+export default function QuickEntryForm({ currentStock, tortilleriaId, onSuccess }: QuickEntryFormProps) {
+  const today = getToday()
   const [mtype, setMtype] = useState<MovementType>('llegada')
   const [sacks, setSacks] = useState('')
   const [employee, setEmployee] = useState('')
@@ -52,7 +54,7 @@ export default function QuickEntryForm({ currentStock, onSuccess }: QuickEntryFo
         day,
         type: mtype,
         sacks: sacksNum,
-        tortilleria_id: 1,
+        tortilleria_id: tortilleriaId,
         employee_name: employee.trim(),
       }),
     })

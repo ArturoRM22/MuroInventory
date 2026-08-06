@@ -19,7 +19,7 @@ Use a normalized **movements** table instead of per-tortillería columns, so `in
 - **users**
   - `id` (uuid, PK)
   - `name` (string)
-  - `role` (enum: `manager` | `user`)
+  - `role` (enum: `admin` | `user`)
   - `tortilleria_id` (uuid, FK)
 
 - **movements**
@@ -36,9 +36,9 @@ Daily stock is derived, not stored:
 ## Core features (v1)
 
 1. **Corn sack registration** — daily entry of arrivals (`llegaron`) and usage (`se usaron`) per tortillería, with usage from secondary locations recorded against the main tortillería's stock.
-2. **CRUD for tortillerías** — manager-only.
+2. **CRUD for tortillerías** — admin-only.
 3. **Role-based access**
-   - `manager`: full access, including tortillería CRUD and user management.
+   - `admin`: full access, including tortillería CRUD and user management.
    - `user`: can only register daily sack usage and view/filter data.
 4. **Filtering** — by day, month, or custom date range.
 

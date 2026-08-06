@@ -7,6 +7,7 @@ const {
   isId,
   collectErrors,
 } = require('../utils/validation');
+const { isTortilleriaAccessible, getUserTortilleriaIds } = require('../middleware/auth');
 
 const MOVEMENT_TYPES = ['llegada', 'uso'];
 
@@ -46,8 +47,18 @@ async function listMovements(req, res, next) {
           details: { tortilleria_id: err },
         });
       }
+      if (!(await isTortilleriaAccessible(req.user.sub, Number(tortilleria_id)))) {
+        return res.status(403).json({ error: 'You do not have access to this tortilleria' });
+      }
       conditions.push(`tortilleria_id = $${conditions.length + 1}`);
       values.push(tortilleria_id);
+    } else {
+      const ids = await getUserTortilleriaIds(req.user.sub);
+      if (ids.length === 0) {
+        return res.json({ data: [] });
+      }
+      conditions.push(`tortilleria_id = ANY($${conditions.length + 1}::int[])`);
+      values.push(ids);
     }
 
     const whereClause = conditions.length ? `WHERE ${conditions.join(' AND ')}` : '';
@@ -77,6 +88,10 @@ async function createMovement(req, res, next) {
 
     if (errors) {
       return res.status(400).json({ error: 'Validation failed', details: errors });
+    }
+
+    if (!(await isTortilleriaAccessible(req.user.sub, Number(tortilleria_id)))) {
+      return res.status(403).json({ error: 'You do not have access to this tortilleria' });
     }
 
     // Per spec, movements always reference the main tortilleria.

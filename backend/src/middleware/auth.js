@@ -1,5 +1,6 @@
 const jwt = require('jsonwebtoken');
 const { JWT_SECRET } = require('../config');
+const { query } = require('../db/query');
 
 function requireAuth(req, res, next) {
   const token = req.cookies && req.cookies.muro_token;
@@ -28,4 +29,20 @@ function requireRole(role) {
   };
 }
 
-module.exports = { requireAuth, requireRole };
+async function isTortilleriaAccessible(userId, tortilleriaId) {
+  const result = await query(
+    'SELECT 1 FROM user_tortillerias WHERE user_id = $1 AND tortilleria_id = $2',
+    [userId, tortilleriaId]
+  );
+  return result.rows.length > 0;
+}
+
+async function getUserTortilleriaIds(userId) {
+  const result = await query(
+    'SELECT tortilleria_id FROM user_tortillerias WHERE user_id = $1',
+    [userId]
+  );
+  return result.rows.map((row) => row.tortilleria_id);
+}
+
+module.exports = { requireAuth, requireRole, isTortilleriaAccessible, getUserTortilleriaIds };
