@@ -13,11 +13,12 @@ const SELECT = 'SELECT id, name, is_main, main_tortilleria_id, initial_stock FRO
 
 async function listTortillerias(req, res, next) {
   try {
+    const isSuper = req.user.role === 'super';
     const result = await query(
       `${SELECT}
-       WHERE id IN (SELECT tortilleria_id FROM user_tortillerias WHERE user_id = $1)
+       ${isSuper ? '' : 'WHERE id IN (SELECT tortilleria_id FROM user_tortillerias WHERE user_id = $1)'}
        ORDER BY is_main DESC, name ASC`,
-      [req.user.sub]
+      isSuper ? [] : [req.user.sub]
     );
     return res.json({ data: result.rows });
   } catch (err) {
@@ -32,7 +33,7 @@ async function getTortilleriaById(req, res, next) {
       return res.status(400).json({ error: 'Invalid tortilleria id', details: { id: idErr } });
     }
 
-    if (!(await isTortilleriaAccessible(req.user.sub, Number(req.params.id)))) {
+    if (!(await isTortilleriaAccessible(req.user, Number(req.params.id)))) {
       return res.status(403).json({ error: 'You do not have access to this tortilleria' });
     }
 
@@ -91,7 +92,7 @@ async function updateTortilleria(req, res, next) {
       return res.status(400).json({ error: 'Invalid tortilleria id', details: { id: idErr } });
     }
 
-    if (!(await isTortilleriaAccessible(req.user.sub, Number(req.params.id)))) {
+    if (!(await isTortilleriaAccessible(req.user, Number(req.params.id)))) {
       return res.status(403).json({ error: 'You do not have access to this tortilleria' });
     }
 
@@ -187,8 +188,29 @@ async function deleteTortilleria(req, res, next) {
       return res.status(400).json({ error: 'Invalid tortilleria id', details: { id: idErr } });
     }
 
-    if (!(await isTortilleriaAccessible(req.user.sub, Number(req.params.id)))) {
+    if (!(await isTortilleriaAccessible(req.user, Number(req.params.id)))) {
       return res.status(403).json({ error: 'You do not have access to this tortilleria' });
+    }
+
+    const movementCount = await query(
+      `SELECT COUNT(*)::int AS total FROM movements
+       WHERE tortilleria_id = $1 OR destination_tortilleria_id = $1`,
+      [req.params.id]
+    );
+    if (movementCount.rows[0].total > 0) {
+      return res.status(409).json({
+        error: `Cannot delete: tortilleria is referenced by ${movementCount.rows[0].total} movement record(s). Delete them first.`,
+      });
+    }
+
+    const secondaryCount = await query(
+      'SELECT COUNT(*)::int AS total FROM tortillerias WHERE main_tortilleria_id = $1',
+      [req.params.id]
+    );
+    if (secondaryCount.rows[0].total > 0) {
+      return res.status(409).json({
+        error: `Cannot delete: tortilleria has ${secondaryCount.rows[0].total} linked secondary tortilleria(s). Delete or reassign them first.`,
+      });
     }
 
     const result = await query('DELETE FROM tortillerias WHERE id = $1 RETURNING id', [
@@ -197,6 +219,106 @@ async function deleteTortilleria(req, res, next) {
 
     if (result.rows.length === 0) {
       return res.status(404).json({ error: 'Tortilleria not found' });
+    }
+
+    return res.status(204).send();
+  } catch (err) {
+    return next(err);
+  }
+}
+
+async function listTortilleriaUsers(req, res, next) {
+  try {
+    const idErr = isId(req.params.id);
+    if (idErr) {
+      return res.status(400).json({ error: 'Invalid tortilleria id', details: { id: idErr } });
+    }
+
+    const tortilleria = await query('SELECT id FROM tortillerias WHERE id = $1', [req.params.id]);
+    if (tortilleria.rows.length === 0) {
+      return res.status(404).json({ error: 'Tortilleria not found' });
+    }
+
+    const result = await query(
+      `SELECT u.id, u.name, u.role
+       FROM users u
+       JOIN user_tortillerias ut ON ut.user_id = u.id
+       WHERE ut.tortilleria_id = $1
+       ORDER BY u.name ASC`,
+      [req.params.id]
+    );
+
+    return res.json({ data: result.rows });
+  } catch (err) {
+    return next(err);
+  }
+}
+
+async function addTortilleriaUser(req, res, next) {
+  try {
+    const { user_id } = req.body || {};
+
+    const idErr = isId(req.params.id);
+    const userIdErr = isId(user_id);
+    const errors = collectErrors({
+      id: idErr,
+      user_id: userIdErr,
+    });
+    if (errors) {
+      return res.status(400).json({ error: 'Validation failed', details: errors });
+    }
+
+    const tortilleria = await query('SELECT id FROM tortillerias WHERE id = $1', [req.params.id]);
+    if (tortilleria.rows.length === 0) {
+      return res.status(404).json({ error: 'Tortilleria not found' });
+    }
+
+    const user = await query('SELECT id, name, role FROM users WHERE id = $1', [user_id]);
+    if (user.rows.length === 0) {
+      return res.status(404).json({ error: 'User not found' });
+    }
+    if (user.rows[0].role === 'super') {
+      return res.status(400).json({ error: 'The super user cannot be assigned to a tortilleria' });
+    }
+
+    const existing = await query(
+      'SELECT 1 FROM user_tortillerias WHERE user_id = $1 AND tortilleria_id = $2',
+      [user_id, req.params.id]
+    );
+    if (existing.rows.length > 0) {
+      return res.status(409).json({ error: 'User is already assigned to this tortilleria' });
+    }
+
+    await query(
+      'INSERT INTO user_tortillerias (user_id, tortilleria_id) VALUES ($1, $2)',
+      [user_id, req.params.id]
+    );
+
+    return res.status(201).json({ data: user.rows[0] });
+  } catch (err) {
+    return next(err);
+  }
+}
+
+async function removeTortilleriaUser(req, res, next) {
+  try {
+    const idErr = isId(req.params.id);
+    const userIdErr = isId(req.params.userId);
+    const errors = collectErrors({
+      id: idErr,
+      userId: userIdErr,
+    });
+    if (errors) {
+      return res.status(400).json({ error: 'Validation failed', details: errors });
+    }
+
+    const result = await query(
+      'DELETE FROM user_tortillerias WHERE user_id = $1 AND tortilleria_id = $2',
+      [req.params.userId, req.params.id]
+    );
+
+    if (result.rowCount === 0) {
+      return res.status(404).json({ error: 'User is not assigned to this tortilleria' });
     }
 
     return res.status(204).send();
@@ -239,4 +361,7 @@ module.exports = {
   createTortilleria,
   updateTortilleria,
   deleteTortilleria,
+  listTortilleriaUsers,
+  addTortilleriaUser,
+  removeTortilleriaUser,
 };

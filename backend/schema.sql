@@ -2,7 +2,7 @@
 -- PostgreSQL database dump
 --
 
-\restrict Pzd0G0q0ugGWpaZVYvs6Ih0kfqetYuAV0zc8TjqOWrxGthbfCrovjQh9fsVND4S
+\restrict mvjP9ynCBaOAeFtmqJCbRBK9yshHF2UcZaXsSg7K7yvGoyoBO68dorPKBW6LmdO
 
 -- Dumped from database version 16.14 (Ubuntu 16.14-0ubuntu0.24.04.1)
 -- Dumped by pg_dump version 16.14 (Ubuntu 16.14-0ubuntu0.24.04.1)
@@ -35,8 +35,10 @@ CREATE TABLE public.movements (
     employee_name text NOT NULL,
     created_by integer NOT NULL,
     created_at timestamp with time zone DEFAULT now() NOT NULL,
+    destination_tortilleria_id integer,
+    transfer_group uuid,
     CONSTRAINT movements_sacks_check CHECK ((sacks >= 0)),
-    CONSTRAINT movements_type_check CHECK ((type = ANY (ARRAY['llegada'::text, 'uso'::text])))
+    CONSTRAINT movements_type_check CHECK ((type = ANY (ARRAY['llegada'::text, 'uso'::text, 'salida'::text])))
 );
 
 
@@ -123,7 +125,7 @@ CREATE TABLE public.users (
     name text NOT NULL,
     password text NOT NULL,
     role text NOT NULL,
-    CONSTRAINT users_role_check CHECK ((role = ANY (ARRAY['admin'::text, 'user'::text])))
+    CONSTRAINT users_role_check CHECK ((role = ANY (ARRAY['admin'::text, 'user'::text, 'super'::text])))
 );
 
 
@@ -176,26 +178,26 @@ ALTER TABLE ONLY public.users ALTER COLUMN id SET DEFAULT nextval('public.users_
 -- Data for Name: movements; Type: TABLE DATA; Schema: public; Owner: arturo
 --
 
-COPY public.movements (id, day, type, sacks, tortilleria_id, employee_name, created_by, created_at) FROM stdin;
-1	2026-07-31	llegada	10	1	Israel	1	2026-07-31 15:27:20.694966-06
-2	2026-07-31	uso	5	1	Israel	1	2026-07-31 15:27:32.926054-06
-3	2026-07-29	llegada	3	1	Juan	1	2026-07-31 15:32:29.333584-06
-4	2026-07-30	uso	5	1	Juan	1	2026-07-31 15:32:46.338114-06
-5	2026-07-30	llegada	20	1	Juan	1	2026-07-31 15:32:56.314109-06
-6	2026-07-28	llegada	50	1	Juan	1	2026-07-31 15:34:25.589598-06
-7	2026-07-28	uso	5	1	Juan	1	2026-07-31 15:34:36.614763-06
-8	2026-07-31	uso	1	1	Guera	1	2026-07-31 15:58:36.898382-06
-9	2026-07-28	uso	5	1	Guera	1	2026-07-31 15:59:47.66371-06
-10	2026-07-31	llegada	2	1	Guera	1	2026-07-31 16:20:25.757241-06
-11	2026-08-05	llegada	20	1	Guera	1	2026-08-05 15:43:15.70372-06
-12	2026-08-05	uso	5	1	Israel	1	2026-08-05 15:43:23.398507-06
-13	2026-08-06	uso	1	1	Guera	1	2026-08-05 18:37:59.521421-06
-14	2026-08-06	llegada	10	1	Israel	1	2026-08-05 18:38:14.811634-06
-15	2026-08-05	llegada	1	1	Guera	1	2026-08-05 18:39:28.270454-06
-16	2026-08-06	llegada	1	1	Guera	3	2026-08-05 18:58:08.712782-06
-17	2026-08-06	uso	5	1	Israel	3	2026-08-05 18:58:23.787892-06
-18	2026-08-05	llegada	3	1	Guera	3	2026-08-05 18:59:56.545594-06
-19	2026-08-05	uso	2	1	Guera	3	2026-08-05 19:11:41.439512-06
+COPY public.movements (id, day, type, sacks, tortilleria_id, employee_name, created_by, created_at, destination_tortilleria_id, transfer_group) FROM stdin;
+1	2026-07-31	llegada	10	1	Israel	1	2026-07-31 15:27:20.694966-06	\N	\N
+2	2026-07-31	uso	5	1	Israel	1	2026-07-31 15:27:32.926054-06	\N	\N
+3	2026-07-29	llegada	3	1	Juan	1	2026-07-31 15:32:29.333584-06	\N	\N
+4	2026-07-30	uso	5	1	Juan	1	2026-07-31 15:32:46.338114-06	\N	\N
+5	2026-07-30	llegada	20	1	Juan	1	2026-07-31 15:32:56.314109-06	\N	\N
+6	2026-07-28	llegada	50	1	Juan	1	2026-07-31 15:34:25.589598-06	\N	\N
+7	2026-07-28	uso	5	1	Juan	1	2026-07-31 15:34:36.614763-06	\N	\N
+8	2026-07-31	uso	1	1	Guera	1	2026-07-31 15:58:36.898382-06	\N	\N
+9	2026-07-28	uso	5	1	Guera	1	2026-07-31 15:59:47.66371-06	\N	\N
+10	2026-07-31	llegada	2	1	Guera	1	2026-07-31 16:20:25.757241-06	\N	\N
+11	2026-08-05	llegada	20	1	Guera	1	2026-08-05 15:43:15.70372-06	\N	\N
+12	2026-08-05	uso	5	1	Israel	1	2026-08-05 15:43:23.398507-06	\N	\N
+13	2026-08-06	uso	1	1	Guera	1	2026-08-05 18:37:59.521421-06	\N	\N
+14	2026-08-06	llegada	10	1	Israel	1	2026-08-05 18:38:14.811634-06	\N	\N
+15	2026-08-05	llegada	1	1	Guera	1	2026-08-05 18:39:28.270454-06	\N	\N
+16	2026-08-06	llegada	1	1	Guera	3	2026-08-05 18:58:08.712782-06	\N	\N
+17	2026-08-06	uso	5	1	Israel	3	2026-08-05 18:58:23.787892-06	\N	\N
+18	2026-08-05	llegada	3	1	Guera	3	2026-08-05 18:59:56.545594-06	\N	\N
+19	2026-08-05	uso	2	1	Guera	3	2026-08-05 19:11:41.439512-06	\N	\N
 \.
 
 
@@ -205,6 +207,7 @@ COPY public.movements (id, day, type, sacks, tortilleria_id, employee_name, crea
 
 COPY public.tortillerias (id, name, is_main, main_tortilleria_id, initial_stock) FROM stdin;
 1	Torre	t	\N	50
+2	Sucursal Norte	f	1	0
 \.
 
 
@@ -217,6 +220,8 @@ COPY public.user_tortillerias (user_id, tortilleria_id) FROM stdin;
 4	1
 2	1
 3	1
+1	2
+7	1
 \.
 
 
@@ -229,6 +234,7 @@ COPY public.users (id, name, password, role) FROM stdin;
 2	usuarioTorre	$2b$10$UxbnwNNObwA5QvSAqT99euy2W4FANF1QPtUT0gwfAaoiWBMMR7IBy	user
 3	ARTURO	$2b$10$YvvYxnZtsjXTKNlVTjJQ9uzR9B6B1NKsMX8/QT6m2ecYX0vbi5HIe	admin
 4	usuarioPerla	$2b$10$ijL6L5e2NmJ9U5Wjl7gSDeNvjVmA9QM1y4/c9MYe0mudbXLzOUS0a	user
+7	usuarioVerde	$2b$10$HzGn/5h.6bn0.KTjKnSAiePeUxmDu4jTOVUfrf/9D5diPEwXa4fUi	user
 \.
 
 
@@ -236,21 +242,21 @@ COPY public.users (id, name, password, role) FROM stdin;
 -- Name: movements_id_seq; Type: SEQUENCE SET; Schema: public; Owner: arturo
 --
 
-SELECT pg_catalog.setval('public.movements_id_seq', 19, true);
+SELECT pg_catalog.setval('public.movements_id_seq', 23, true);
 
 
 --
 -- Name: tortillerias_id_seq; Type: SEQUENCE SET; Schema: public; Owner: arturo
 --
 
-SELECT pg_catalog.setval('public.tortillerias_id_seq', 1, true);
+SELECT pg_catalog.setval('public.tortillerias_id_seq', 3, true);
 
 
 --
 -- Name: users_id_seq; Type: SEQUENCE SET; Schema: public; Owner: arturo
 --
 
-SELECT pg_catalog.setval('public.users_id_seq', 5, true);
+SELECT pg_catalog.setval('public.users_id_seq', 7, true);
 
 
 --
@@ -294,6 +300,13 @@ ALTER TABLE ONLY public.users
 
 
 --
+-- Name: idx_movements_destination; Type: INDEX; Schema: public; Owner: arturo
+--
+
+CREATE INDEX idx_movements_destination ON public.movements USING btree (destination_tortilleria_id);
+
+
+--
 -- Name: idx_movements_tort_day; Type: INDEX; Schema: public; Owner: arturo
 --
 
@@ -313,6 +326,14 @@ CREATE INDEX idx_user_tortillerias_tortilleria ON public.user_tortillerias USING
 
 ALTER TABLE ONLY public.movements
     ADD CONSTRAINT movements_created_by_fkey FOREIGN KEY (created_by) REFERENCES public.users(id);
+
+
+--
+-- Name: movements movements_destination_tortilleria_id_fkey; Type: FK CONSTRAINT; Schema: public; Owner: arturo
+--
+
+ALTER TABLE ONLY public.movements
+    ADD CONSTRAINT movements_destination_tortilleria_id_fkey FOREIGN KEY (destination_tortilleria_id) REFERENCES public.tortillerias(id);
 
 
 --
@@ -351,5 +372,5 @@ ALTER TABLE ONLY public.user_tortillerias
 -- PostgreSQL database dump complete
 --
 
-\unrestrict Pzd0G0q0ugGWpaZVYvs6Ih0kfqetYuAV0zc8TjqOWrxGthbfCrovjQh9fsVND4S
+\unrestrict mvjP9ynCBaOAeFtmqJCbRBK9yshHF2UcZaXsSg7K7yvGoyoBO68dorPKBW6LmdO
 

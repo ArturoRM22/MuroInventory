@@ -14,21 +14,23 @@ const SUMMARY_SQL = `
   daily AS (
     SELECT day,
            COALESCE(SUM(sacks) FILTER (WHERE type = 'llegada'), 0) AS llegadas,
-           COALESCE(SUM(sacks) FILTER (WHERE type = 'uso'), 0) AS usos
+           COALESCE(SUM(sacks) FILTER (WHERE type = 'uso'), 0) AS usos,
+           COALESCE(SUM(sacks) FILTER (WHERE type = 'salida'), 0) AS salidas
     FROM movements
     WHERE tortilleria_id = $1 AND day BETWEEN $2 AND $3
     GROUP BY day
   ),
   running AS (
-    SELECT day, llegadas, usos,
-           COALESCE(SUM(llegadas - usos) OVER (ORDER BY day ROWS BETWEEN UNBOUNDED PRECEDING AND 1 PRECEDING), 0) AS prev_net
+    SELECT day, llegadas, usos, salidas,
+           COALESCE(SUM(llegadas - usos - salidas) OVER (ORDER BY day ROWS BETWEEN UNBOUNDED PRECEDING AND 1 PRECEDING), 0) AS prev_net
     FROM daily
   )
   SELECT day::text AS day,
          (SELECT initial_stock FROM initial) + (SELECT net FROM prior_net) + prev_net AS inicio,
          llegadas,
          usos,
-         (SELECT initial_stock FROM initial) + (SELECT net FROM prior_net) + prev_net + llegadas - usos AS quedo
+         salidas,
+         (SELECT initial_stock FROM initial) + (SELECT net FROM prior_net) + prev_net + llegadas - usos - salidas AS quedo
   FROM running
   ORDER BY day DESC
 `;
@@ -44,7 +46,8 @@ const TODAY_SQL = `
   ),
   today_agg AS (
     SELECT COALESCE(SUM(sacks) FILTER (WHERE type = 'llegada'), 0) AS llegadas,
-           COALESCE(SUM(sacks) FILTER (WHERE type = 'uso'), 0) AS usos
+           COALESCE(SUM(sacks) FILTER (WHERE type = 'uso'), 0) AS usos,
+           COALESCE(SUM(sacks) FILTER (WHERE type = 'salida'), 0) AS salidas
     FROM movements
     WHERE tortilleria_id = $1 AND day = CURRENT_DATE
   )
@@ -52,8 +55,10 @@ const TODAY_SQL = `
          (SELECT initial_stock FROM initial) + (SELECT net FROM prior_net) AS inicio,
          (SELECT llegadas FROM today_agg) AS llegadas,
          (SELECT usos FROM today_agg) AS usos,
+         (SELECT salidas FROM today_agg) AS salidas,
          (SELECT initial_stock FROM initial) + (SELECT net FROM prior_net)
-           + (SELECT llegadas FROM today_agg) - (SELECT usos FROM today_agg) AS quedo
+           + (SELECT llegadas FROM today_agg) - (SELECT usos FROM today_agg)
+           - (SELECT salidas FROM today_agg) AS quedo
 `;
 
 async function validateTortilleria(tortilleria_id) {
@@ -84,7 +89,7 @@ async function getSummary(req, res, next) {
       return res.status(400).json({ error: tortErr });
     }
 
-    if (!(await isTortilleriaAccessible(req.user.sub, Number(tortilleria_id)))) {
+    if (!(await isTortilleriaAccessible(req.user, Number(tortilleria_id)))) {
       return res.status(403).json({ error: 'You do not have access to this tortilleria' });
     }
 
@@ -115,7 +120,7 @@ async function getToday(req, res, next) {
       return res.status(400).json({ error: tortErr });
     }
 
-    if (!(await isTortilleriaAccessible(req.user.sub, Number(tortilleria_id)))) {
+    if (!(await isTortilleriaAccessible(req.user, Number(tortilleria_id)))) {
       return res.status(403).json({ error: 'You do not have access to this tortilleria' });
     }
 

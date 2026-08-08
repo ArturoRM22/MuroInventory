@@ -1,8 +1,10 @@
 import { useState } from 'react'
 import { useNavigate } from 'react-router-dom'
+import { useTortilleria } from '../context/tortilleria'
 
 export default function Login() {
   const navigate = useNavigate()
+  const { refresh } = useTortilleria()
   const [name, setName] = useState('')
   const [password, setPassword] = useState('')
   const [submitting, setSubmitting] = useState(false)
@@ -29,6 +31,7 @@ export default function Login() {
           'user',
           JSON.stringify({ id: body.id, name: body.name, role: body.role })
         )
+        refresh()
         navigate('/', { replace: true })
       })
       .catch((err) => {

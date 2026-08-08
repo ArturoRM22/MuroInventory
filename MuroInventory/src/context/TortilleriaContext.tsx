@@ -1,10 +1,10 @@
 import { useEffect, useState, type ReactNode } from 'react'
 import { TortilleriaContext } from './tortilleria'
 import { getJSON } from '../lib/api'
-import type { Me, Tortilleria } from '../types'
+import type { Me, Tortilleria, UserRole } from '../types'
 
 export function TortilleriaProvider({ children }: { children: ReactNode }) {
-  const [user, setUser] = useState<{ id: number; name: string; role: 'admin' | 'user' } | null>(null)
+  const [user, setUser] = useState<{ id: number; name: string; role: UserRole } | null>(null)
   const [tortillerias, setTortillerias] = useState<Tortilleria[]>([])
   const [current, setCurrentState] = useState<Tortilleria | null>(null)
   const [loading, setLoading] = useState(true)
@@ -40,12 +40,18 @@ export function TortilleriaProvider({ children }: { children: ReactNode }) {
     if (next) sessionStorage.setItem('currentTortilleriaId', String(next.id))
   }
 
+  function reset() {
+    setUser(null)
+    setTortillerias([])
+    setCurrentState(null)
+  }
+
   useEffect(() => {
     refresh()
   }, [])
 
   return (
-    <TortilleriaContext.Provider value={{ user, tortillerias, current, loading, setCurrent, refresh }}>
+    <TortilleriaContext.Provider value={{ user, tortillerias, current, loading, setCurrent, refresh, reset }}>
       {children}
     </TortilleriaContext.Provider>
   )

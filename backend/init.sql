@@ -20,7 +20,7 @@ CREATE TABLE users (
   id SERIAL PRIMARY KEY,
   name text NOT NULL UNIQUE,
   password text NOT NULL,
-  role text NOT NULL CHECK (role IN ('admin', 'user'))
+  role text NOT NULL CHECK (role IN ('admin', 'user', 'super'))
 );
 
 CREATE TABLE user_tortillerias (
@@ -34,15 +34,18 @@ CREATE INDEX idx_user_tortillerias_tortilleria ON user_tortillerias(tortilleria_
 CREATE TABLE movements (
   id SERIAL PRIMARY KEY,
   day date NOT NULL,
-  type text NOT NULL CHECK (type IN ('llegada', 'uso')),
+  type text NOT NULL CHECK (type IN ('llegada', 'uso', 'salida')),
   sacks int NOT NULL CHECK (sacks >= 0),
   tortilleria_id INT NOT NULL REFERENCES tortillerias(id),
+  destination_tortilleria_id INT REFERENCES tortillerias(id),
+  transfer_group UUID,
   employee_name text NOT NULL,
   created_by INT NOT NULL REFERENCES users(id),
   created_at timestamptz NOT NULL DEFAULT now()
 );
 
 CREATE INDEX idx_movements_tort_day ON movements(tortilleria_id, day);
+CREATE INDEX idx_movements_destination ON movements(destination_tortilleria_id);
 
 -- Seed: one main tortillería (id=1) + admin user (id=1)
 -- Password for admin is 'admin123'.

@@ -7,6 +7,7 @@ const authRoutes = require('./routes/auth.routes');
 const tortilleriasRoutes = require('./routes/tortillerias.routes');
 const movementsRoutes = require('./routes/movements.routes');
 const summaryRoutes = require('./routes/summary.routes');
+const usersRoutes = require('./routes/users.routes');
   
 const app = express();
 app.use(express.json());
@@ -20,6 +21,7 @@ app.use('/api/auth', authRoutes);
 app.use('/api/tortillerias', tortilleriasRoutes);
 app.use('/api/movements', movementsRoutes);
 app.use('/api/movements', summaryRoutes);
+app.use('/api/users', usersRoutes);
 
 // 404 handler for unmatched routes
 app.use((req, res) => {

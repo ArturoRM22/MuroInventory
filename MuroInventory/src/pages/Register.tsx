@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react'
-import { Navigate, useNavigate } from 'react-router-dom'
+import { Navigate } from 'react-router-dom'
 import { useTortilleria } from '../context/tortilleria'
 import { getJSON } from '../lib/api'
 import type { Tortilleria } from '../types'
@@ -7,7 +7,6 @@ import type { Tortilleria } from '../types'
 type UserRole = 'admin' | 'user'
 
 export default function Register() {
-  const navigate = useNavigate()
   const { user } = useTortilleria()
 
   const [tortillerias, setTortillerias] = useState<Tortilleria[]>([])
@@ -26,7 +25,7 @@ export default function Register() {
       .catch(() => {})
   }, [])
 
-  if (!user || user.role !== 'admin') {
+  if (!user || (user.role !== 'admin' && user.role !== 'super')) {
     return <Navigate to="/" replace />
   }
 
@@ -200,13 +199,6 @@ export default function Register() {
             {submitting ? 'Registrando...' : 'Registrar'}
           </button>
         </form>
-
-        <button
-          onClick={() => navigate('/')}
-          className="mt-4 w-full cursor-pointer rounded-lg border border-gray-300 px-4 py-2 text-sm text-gray-600 hover:bg-gray-100"
-        >
-          Volver al Panel
-        </button>
       </div>
     </div>
   )

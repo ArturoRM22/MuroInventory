@@ -60,7 +60,7 @@ async function register(req, res, next) {
 
     const uniqueIds = [...new Set(tortilleria_ids.map((id) => Number(id)))];
     for (const id of uniqueIds) {
-      if (!(await isTortilleriaAccessible(req.user.sub, id))) {
+      if (!(await isTortilleriaAccessible(req.user, id))) {
         return res.status(403).json({
           error: 'You can only assign tortillerias you have access to',
           details: { tortilleria_ids: `tortilleria ${id} is not accessible` },
@@ -100,21 +100,28 @@ function validateTortilleriaIds(value) {
   return null;
 }
 
-async function getUserTortillerias(userId) {
-  const result = await query(
-    `SELECT t.id, t.name, t.is_main, t.main_tortilleria_id, t.initial_stock
-     FROM tortillerias t
+async function getUserTortillerias(user) {
+  const base = `FROM tortillerias t
      JOIN user_tortillerias ut ON ut.tortilleria_id = t.id
-     WHERE ut.user_id = $1
-     ORDER BY t.is_main DESC, t.name ASC`,
-    [userId]
-  );
+     WHERE ut.user_id = $1`;
+  const result = user.role === 'super'
+    ? await query(
+        `SELECT t.id, t.name, t.is_main, t.main_tortilleria_id, t.initial_stock
+         FROM tortillerias t
+         ORDER BY t.is_main DESC, t.name ASC`
+      )
+    : await query(
+        `SELECT t.id, t.name, t.is_main, t.main_tortilleria_id, t.initial_stock
+         ${base}
+         ORDER BY t.is_main DESC, t.name ASC`,
+        [user.sub]
+      );
   return result.rows;
 }
 
 async function me(req, res, next) {
   try {
-    const tortillerias = await getUserTortillerias(req.user.sub);
+    const tortillerias = await getUserTortillerias(req.user);
     return res.json({
       data: { id: req.user.sub, name: req.user.name, role: req.user.role, tortillerias },
     });

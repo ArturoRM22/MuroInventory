@@ -51,15 +51,21 @@ Record a sack arrival (`llegada`) or usage (`uso`).
 | Field | Type | Constraints |
 |---|---|---|
 | `day` | `YYYY-MM-DD` | required |
-| `type` | string | required, one of: `"llegada"`, `"uso"` |
+| `type` | string | required, one of: `"llegada"`, `"uso"`, `"salida"` |
 | `sacks` | integer | required, >= 0 |
-| `tortilleria_id` | integer | required, must reference a tortilleria with `is_main = true` |
+| `tortilleria_id` | integer | required, must reference a tortilleria the user has access to |
 | `employee_name` | string | required, non-empty (whitespace-trimmed on insert) |
+| `destination_tortilleria_id` | integer | required for `type = "salida"` only; a secondary tortilleria linked to `tortilleria_id` |
 
 ### Business rules
 
-- **Stock check on `uso`**: validates that the main tortilleria's current stock (`initial_stock + all prior llegada - all prior uso` up to and including `day`) is >= `sacks`. Returns `400` with `"insufficient stock: available X, requested Y"` if not.
-- **Main tortilleria only**: movements always reference the main tortilleria.
+- **Main vs secondary tortilleria**:
+  - `llegada` — only on the **main** tortilleria (new stock arrives).
+  - `salida` — only on the **main** tortilleria; sacks are sent to a secondary (`destination_tortilleria_id` must reference a secondary whose `main_tortilleria_id` equals `tortilleria_id`).
+  - `uso` — allowed on both main and secondary.
+- **Salidas are two-sided**: recording a `salida` atomically creates the `salida` row on the main **and** a matching `llegada` row on the destination secondary (same day, employee, creator; both share a `transfer_group` UUID).
+- **Stock check on `uso` and `salida`**: validates that the tortilleria's current stock (`initial_stock + all prior llegada - all prior uso - all prior salida` up to and including `day`) is >= `sacks`. Returns `400` with `"insufficient stock: available X, requested Y"` if not.
+- **Deleting a transfer**: `DELETE /api/movements/:id` removes the linked pair (both rows sharing the `transfer_group`).
 
 ### Response `201`
 
@@ -71,12 +77,15 @@ Record a sack arrival (`llegada`) or usage (`uso`).
     "type": "llegada",
     "sacks": 50,
     "tortilleria_id": 1,
+    "destination_tortilleria_id": null,
     "employee_name": "Juan",
     "created_by": 1,
     "created_at": "2025-06-15T12:00:00.000Z"
   }
 }
 ```
+
+A `salida` response additionally includes `destination_tortilleria_id`.
 
 ### Error `400`
 
@@ -94,7 +103,7 @@ Record a sack arrival (`llegada`) or usage (`uso`).
 
 ## `DELETE /api/movements/:id` — Delete movement
 
-**Role required**: `admin`
+**Auth required**: authenticated user with access to the movement's tortilleria (403 otherwise).
 
 Removes a movement record. Stock is recalculated on the fly, so deleting a movement effectively reverses it.
 
@@ -102,6 +111,7 @@ Removes a movement record. Stock is recalculated on the fly, so deleting a movem
 |---|---|
 | `204` | (empty) |
 | `404` | `{ "error": "Movement not found" }` |
+| `403` | `{ "error": "You do not have access to this tortilleria" }` |
 
 ---
 
@@ -127,7 +137,8 @@ Daily summary with running stock balance for a given tortilleria.
       "inicio": 50,
       "llegadas": 100,
       "usos": 30,
-      "quedo": 120
+      "salidas": 10,
+      "quedo": 110
     }
   ]
 }
@@ -141,7 +152,8 @@ Each row represents one day:
 | `inicio` | Stock at the start of the day = `initial_stock` + net movements before this day |
 | `llegadas` | Total sacks arrived that day |
 | `usos` | Total sacks used that day |
-| `quedo` | Stock remaining at end of day = `inicio + llegadas - usos` |
+| `salidas` | Total sacks sent to a secondary tortilleria that day (only non-zero on a main) |
+| `quedo` | Stock remaining at end of day = `inicio + llegadas - usos - salidas` |
 
 Sorted by `day DESC`.
 
@@ -151,6 +163,7 @@ Sorted by `day DESC`.
 quedo = initial_stock
         + SUM(all llegada sacks before and on this day)
         - SUM(all uso sacks before and on this day)
+        - SUM(all salida sacks before and on this day)
 ```
 
 Done via PostgreSQL window functions — no cached balance fields.
@@ -199,14 +212,16 @@ Single-row summary for the current date.
 |---|---|---|
 | `id` | `SERIAL PRIMARY KEY` | |
 | `day` | `date NOT NULL` | |
-| `type` | `text NOT NULL` | `CHECK (type IN ('llegada', 'uso'))` |
+| `type` | `text NOT NULL` | `CHECK (type IN ('llegada', 'uso', 'salida'))` |
 | `sacks` | `int NOT NULL` | `CHECK (sacks >= 0)` |
 | `tortilleria_id` | `int NOT NULL` | `REFERENCES tortillerias(id)` |
+| `destination_tortilleria_id` | `int` | `REFERENCES tortillerias(id)`; set on `salida` rows |
+| `transfer_group` | `uuid` | links a `salida` to its auto-created `llegada` on the destination |
 | `employee_name` | `text NOT NULL` | |
 | `created_by` | `int NOT NULL` | `REFERENCES users(id)` |
 | `created_at` | `timestamptz NOT NULL` | `DEFAULT now()` |
 
-Index: `idx_movements_tort_day ON movements(tortilleria_id, day)`
+Index: `idx_movements_tort_day ON movements(tortilleria_id, day)`, `idx_movements_destination ON movements(destination_tortilleria_id)`
 
 ### `tortillerias` (relevant fields)
 
@@ -234,7 +249,7 @@ Index: `idx_movements_tort_day ON movements(tortilleria_id, day)`
 |---|---|---|
 | `GET /api/movements` | required | any |
 | `POST /api/movements` | required | any |
-| `DELETE /api/movements/:id` | required | `admin` |
+| `DELETE /api/movements/:id` | required | any |
 | `GET /api/movements/summary` | required | any |
 | `GET /api/movements/today` | required | any |
 
@@ -244,7 +259,7 @@ Index: `idx_movements_tort_day ON movements(tortilleria_id, day)`
 
 - **No data in range**: `summary` returns an empty `data: []`, `today` returns `data: null`.
 - **Dates**: always `YYYY-MM-DD` format. The server validates parseability via `new Date(value)`.
-- **Integer params** (`tortilleria_id`, `sacks`): validated as positive/non-negative integers. String coercion is **not** done — `"5"` as `sacks` would fail `typeof value !== 'number'`.
-- **Stock is fully derived**: there is no computed/cached stock column. Every `uso` checks real-time sufficiency by summing all movements up to that day.
-- **Non-main tortillerias**: cannot have movements recorded against them (validated on create). The summary endpoints can query any tortilleria though.
+- **Integer params** (`tortilleria_id`, `sacks`, `destination_tortilleria_id`): validated as positive/non-negative integers. String coercion is **not** done — `"5"` as `sacks` would fail `typeof value !== 'number'`.
+- **Stock is fully derived**: there is no computed/cached stock column. Every `uso`/`salida` checks real-time sufficiency by summing all movements up to that day.
+- **Non-main tortillerias**: cannot have `llegada` or `salida` recorded against them (validated on create); their `llegadas` come automatically from their main's `salidas`. `uso` is allowed. The summary endpoints can query any tortilleria though.
 - **Employee name** is trimmed on insert (`employee_name.trim()`) but not validated to be alphanumeric — any non-empty string is accepted.

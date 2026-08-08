@@ -1,13 +1,14 @@
 import { createContext, useContext } from 'react'
-import type { Tortilleria } from '../types'
+import type { Tortilleria, UserRole } from '../types'
 
 export interface TortilleriaContextValue {
-  user: { id: number; name: string; role: 'admin' | 'user' } | null
+  user: { id: number; name: string; role: UserRole } | null
   tortillerias: Tortilleria[]
   current: Tortilleria | null
   loading: boolean
   setCurrent: (id: number) => void
   refresh: () => void
+  reset: () => void
 }
 
 export const TortilleriaContext = createContext<TortilleriaContextValue | null>(null)

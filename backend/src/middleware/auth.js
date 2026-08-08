@@ -29,20 +29,37 @@ function requireRole(role) {
   };
 }
 
-async function isTortilleriaAccessible(userId, tortilleriaId) {
+function requireAnyRole(...roles) {
+  return (req, res, next) => {
+    if (!req.user) {
+      return res.status(401).json({ error: 'Not authenticated' });
+    }
+    if (!roles.includes(req.user.role)) {
+      return res.status(403).json({ error: `Requires one of roles: ${roles.join(', ')}` });
+    }
+    next();
+  };
+}
+
+async function isTortilleriaAccessible(user, tortilleriaId) {
+  if (user.role === 'super') return true;
   const result = await query(
     'SELECT 1 FROM user_tortillerias WHERE user_id = $1 AND tortilleria_id = $2',
-    [userId, tortilleriaId]
+    [user.sub, tortilleriaId]
   );
   return result.rows.length > 0;
 }
 
-async function getUserTortilleriaIds(userId) {
+async function getUserTortilleriaIds(user) {
+  if (user.role === 'super') {
+    const result = await query('SELECT id FROM tortillerias');
+    return result.rows.map((row) => row.id);
+  }
   const result = await query(
     'SELECT tortilleria_id FROM user_tortillerias WHERE user_id = $1',
-    [userId]
+    [user.sub]
   );
   return result.rows.map((row) => row.tortilleria_id);
 }
 
-module.exports = { requireAuth, requireRole, isTortilleriaAccessible, getUserTortilleriaIds };
+module.exports = { requireAuth, requireRole, requireAnyRole, isTortilleriaAccessible, getUserTortilleriaIds };

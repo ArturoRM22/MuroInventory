@@ -3,6 +3,7 @@ import type { Movement, TodaySummary } from '../types'
 import { useTortilleria } from '../context/tortilleria'
 import { getJSON } from '../lib/api'
 import { getToday } from '../lib/date'
+import { MovementBadge } from './TodayMovements'
 
 export default function SummaryReport() {
   const today = getToday()
@@ -146,6 +147,7 @@ export default function SummaryReport() {
                 <th className="pb-2 pr-4 font-medium">Inicio</th>
                 <th className="pb-2 pr-4 font-medium">Llegadas</th>
                 <th className="pb-2 pr-4 font-medium">Usos</th>
+                <th className="pb-2 pr-4 font-medium">Salidas</th>
                 <th className="pb-2 pr-4 font-medium">Quedo</th>
                 <th className="pb-2 font-medium"></th>
               </tr>
@@ -164,6 +166,7 @@ export default function SummaryReport() {
                       <td className="py-2.5 pr-4 text-gray-600">{s.inicio}</td>
                       <td className="py-2.5 pr-4 text-gray-600">{s.llegadas}</td>
                       <td className="py-2.5 pr-4 text-gray-600">{s.usos}</td>
+                      <td className="py-2.5 pr-4 text-gray-600">{s.salidas}</td>
                       <td className="py-2.5 pr-4 text-gray-600">{s.quedo}</td>
                       <td className="py-2.5">
                         <button
@@ -188,7 +191,7 @@ export default function SummaryReport() {
 
                     {isOpen && (
                       <tr className="bg-gray-50">
-                        <td colSpan={6} className="px-4 py-3">
+                        <td colSpan={7} className="px-4 py-3">
                           {dayLoading && (
                             <div className="animate-pulse rounded-lg bg-gray-100 p-3">
                               <div className="h-4 w-2/3 rounded bg-gray-200" />
@@ -228,15 +231,12 @@ export default function SummaryReport() {
                                       {m.employee_name}
                                     </td>
                                     <td className="py-2.5 pr-4">
-                                      <span
-                                        className={`rounded-full px-2.5 py-0.5 text-xs font-medium ${
-                                          m.type === 'llegada'
-                                            ? 'bg-blue-100 text-blue-700'
-                                            : 'bg-orange-100 text-orange-700'
-                                        }`}
-                                      >
-                                        {m.type === 'llegada' ? 'Llegada' : 'Uso'}
-                                      </span>
+                                      <MovementBadge m={m} />
+                                      {m.type === 'salida' && m.destination_name && (
+                                        <p className="mt-0.5 text-xs text-gray-500">
+                                          a {m.destination_name}
+                                        </p>
+                                      )}
                                     </td>
                                     <td className="py-2.5 pr-4 text-gray-600">{m.sacks}</td>
                                     <td className="py-2.5 text-gray-600">
