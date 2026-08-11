@@ -78,9 +78,12 @@ async function listMovements(req, res, next) {
     const whereClause = conditions.length ? `WHERE ${conditions.join(' AND ')}` : '';
     const sql = `SELECT m.id, m.day::text AS day, m.type, m.sacks, m.tortilleria_id,
                         m.destination_tortilleria_id, d.name AS destination_name,
+                        s.tortilleria_id AS source_tortilleria_id, st.name AS source_name,
                         m.employee_name, m.created_by, m.created_at
                  FROM movements m
                  LEFT JOIN tortillerias d ON d.id = m.destination_tortilleria_id
+                 LEFT JOIN movements s ON s.transfer_group = m.transfer_group AND s.type = 'salida'
+                 LEFT JOIN tortillerias st ON st.id = s.tortilleria_id
                  ${whereClause}
                  ORDER BY m.day DESC, m.created_at DESC`;
 

@@ -44,7 +44,7 @@ export default function Login() {
     <div className="flex min-h-screen items-center justify-center bg-gray-50 px-4">
       <form
         onSubmit={handleSubmit}
-        className="w-full max-w-sm rounded-xl border border-gray-200 bg-white p-8 shadow-sm"
+        className="w-full max-w-sm rounded-xl border border-gray-200 bg-white p-6 shadow-sm md:p-8"
       >
         <h1 className="mb-6 text-center text-xl font-bold text-gray-800">MuroInventory</h1>
 
@@ -83,7 +83,7 @@ export default function Login() {
         <button
           type="submit"
           disabled={submitting}
-          className="w-full cursor-pointer rounded-lg bg-blue-600 px-4 py-2 text-sm font-medium text-white hover:bg-blue-700 disabled:cursor-not-allowed disabled:opacity-50"
+          className="w-full cursor-pointer rounded-lg bg-blue-600 px-4 py-2.5 text-sm font-medium text-white hover:bg-blue-700 disabled:cursor-not-allowed disabled:opacity-50"
         >
           {submitting ? 'Iniciando Sesión...' : 'Iniciar Sesión'}
         </button>

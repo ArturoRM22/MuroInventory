@@ -1,6 +1,7 @@
 import { useState } from 'react'
 import { getToday } from '../lib/date'
 import type { Tortilleria } from '../types'
+import DateField from './DateField'
 
 type MovementType = 'llegada' | 'uso' | 'salida'
 
@@ -106,7 +107,7 @@ export default function QuickEntryForm({
     : [{ value: 'uso', label: 'Uso', activeClass: 'bg-orange-600 text-white' }]
 
   return (
-    <div className="rounded-xl border border-gray-200 bg-white p-6 shadow-sm">
+    <div className="rounded-xl border border-gray-200 bg-white p-4 shadow-sm md:p-6">
       <h2 className="mb-5 text-lg font-semibold text-gray-800">
         Registrar Movimiento{isMain ? '' : ' (Uso)'}
       </h2>
@@ -120,7 +121,7 @@ export default function QuickEntryForm({
                 key={t.value}
                 type="button"
                 onClick={() => setMtype(t.value)}
-                className={`flex-1 cursor-pointer py-2 text-sm font-medium transition ${
+                className={`flex-1 cursor-pointer py-2.5 text-sm font-medium transition md:py-2 ${
                   mtype === t.value
                     ? t.activeClass
                     : 'bg-white text-gray-600 hover:bg-gray-50'
@@ -188,11 +189,10 @@ export default function QuickEntryForm({
           <label htmlFor="day" className="mb-1 block text-sm font-medium text-gray-600">
             Fecha
           </label>
-          <input
+          <DateField
             id="day"
-            type="date"
             value={day}
-            onChange={(e) => setDay(e.target.value)}
+            onChange={setDay}
             required
             className="w-full rounded-lg border border-gray-300 px-3 py-2 text-sm outline-none focus:border-blue-500 focus:ring-1 focus:ring-blue-500"
           />

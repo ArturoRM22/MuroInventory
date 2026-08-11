@@ -19,7 +19,7 @@ export default function ConfirmDeleteUserModal({
 }: ConfirmDeleteUserModalProps) {
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 p-4">
-      <div className="w-full max-w-sm rounded-xl border border-gray-200 bg-white p-6 shadow-lg">
+      <div className="max-h-[calc(100vh-2rem)] w-full max-w-sm overflow-y-auto rounded-xl border border-gray-200 bg-white p-6 shadow-lg">
         <h2 className="mb-4 text-lg font-semibold text-gray-800">Quitar usuario</h2>
         <p className="mb-4 text-sm text-gray-600">
           ¿Quitar a <span className="font-medium">{user.name}</span> de la tortillería{' '}

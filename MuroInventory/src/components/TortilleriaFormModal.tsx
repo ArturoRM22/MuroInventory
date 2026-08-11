@@ -42,7 +42,7 @@ export default function TortilleriaFormModal({
     }
     const stock = parseInt(initialStock, 10)
     if (!Number.isInteger(stock) || stock < 0) {
-      setError('El stock inicial debe ser un número mayor o igual a 0')
+      setError('La existencia inicial debe ser un número mayor o igual a 0')
       return
     }
 
@@ -75,7 +75,7 @@ export default function TortilleriaFormModal({
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 p-4">
-      <div className="w-full max-w-md rounded-xl border border-gray-200 bg-white p-6 shadow-lg">
+      <div className="max-h-[calc(100vh-2rem)] w-full max-w-md overflow-y-auto rounded-xl border border-gray-200 bg-white p-6 shadow-lg">
         <h2 className="mb-5 text-lg font-semibold text-gray-800">
           {tortilleria ? 'Editar Tortillería' : 'Nueva Tortillería'}
         </h2>
@@ -101,7 +101,7 @@ export default function TortilleriaFormModal({
               <button
                 type="button"
                 onClick={() => setIsMain(true)}
-                className={`flex-1 cursor-pointer py-2 text-sm font-medium transition ${
+                className={`flex-1 cursor-pointer py-2.5 text-sm font-medium transition md:py-2 ${
                   isMain ? 'bg-blue-600 text-white' : 'bg-white text-gray-600 hover:bg-gray-50'
                 }`}
               >
@@ -110,7 +110,7 @@ export default function TortilleriaFormModal({
               <button
                 type="button"
                 onClick={() => setIsMain(false)}
-                className={`flex-1 cursor-pointer py-2 text-sm font-medium transition ${
+                className={`flex-1 cursor-pointer py-2.5 text-sm font-medium transition md:py-2 ${
                   !isMain ? 'bg-blue-600 text-white' : 'bg-white text-gray-600 hover:bg-gray-50'
                 }`}
               >
@@ -148,7 +148,7 @@ export default function TortilleriaFormModal({
 
           <div>
             <label htmlFor="tstock" className="mb-1 block text-sm font-medium text-gray-600">
-              Stock inicial
+              Existencia inicial
             </label>
             <input
               id="tstock"

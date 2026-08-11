@@ -4,7 +4,7 @@ export default function TortilleriaSidebar() {
   const { tortillerias, current, loading, setCurrent } = useTortilleria()
 
   return (
-    <aside className="w-52 shrink-0 border-r border-gray-200 bg-white p-4">
+    <aside className="w-full shrink-0 border-b border-gray-200 bg-white p-4 md:w-52 md:border-b-0 md:border-r">
       <h2 className="mb-3 text-xs font-semibold uppercase tracking-wide text-gray-500">
         Tortillerías
       </h2>

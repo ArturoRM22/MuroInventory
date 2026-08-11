@@ -1,9 +1,10 @@
-import { Fragment, useState } from 'react'
+import { Fragment, useEffect, useState } from 'react'
 import type { Movement, TodaySummary } from '../types'
 import { useTortilleria } from '../context/tortilleria'
 import { getJSON } from '../lib/api'
-import { getToday } from '../lib/date'
-import { MovementBadge } from './TodayMovements'
+import { getToday, formatDMY } from '../lib/date'
+import { MovementBadge, MovementNote } from './TodayMovements'
+import DateField from './DateField'
 
 export default function SummaryReport() {
   const today = getToday()
@@ -73,39 +74,42 @@ export default function SummaryReport() {
     }
   }
 
+  useEffect(() => {
+    loadSummaries()
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [])
+
   return (
-    <div className="rounded-xl border border-gray-200 bg-white p-6 shadow-sm">
+    <div className="rounded-xl border border-gray-200 bg-white p-4 shadow-sm md:p-6">
       <h2 className="mb-5 text-lg font-semibold text-gray-800">Historial / Resumen por día</h2>
 
       <div className="mb-5 flex flex-wrap items-end gap-3">
-        <div>
+        <div className="min-w-0 flex-1">
           <label htmlFor="report-from" className="mb-1 block text-sm font-medium text-gray-600">
             Desde
           </label>
-          <input
+          <DateField
             id="report-from"
-            type="date"
             value={from}
-            onChange={(e) => setFrom(e.target.value)}
-            className="rounded-lg border border-gray-300 px-3 py-2 text-sm outline-none focus:border-blue-500 focus:ring-1 focus:ring-blue-500"
+            onChange={setFrom}
+            className="w-full rounded-lg border border-gray-300 px-3 py-2 text-sm outline-none focus:border-blue-500 focus:ring-1 focus:ring-blue-500"
           />
         </div>
-        <div>
+        <div className="min-w-0 flex-1">
           <label htmlFor="report-to" className="mb-1 block text-sm font-medium text-gray-600">
             Hasta
           </label>
-          <input
+          <DateField
             id="report-to"
-            type="date"
             value={to}
-            onChange={(e) => setTo(e.target.value)}
-            className="rounded-lg border border-gray-300 px-3 py-2 text-sm outline-none focus:border-blue-500 focus:ring-1 focus:ring-blue-500"
+            onChange={setTo}
+            className="w-full rounded-lg border border-gray-300 px-3 py-2 text-sm outline-none focus:border-blue-500 focus:ring-1 focus:ring-blue-500"
           />
         </div>
         <button
           onClick={loadSummaries}
           disabled={loading}
-          className="cursor-pointer rounded-lg bg-blue-600 px-4 py-2 text-sm font-medium text-white hover:bg-blue-700 disabled:cursor-not-allowed disabled:opacity-50"
+          className="w-full cursor-pointer rounded-lg bg-blue-600 px-4 py-2.5 text-sm font-medium text-white hover:bg-blue-700 disabled:cursor-not-allowed disabled:opacity-50 md:w-auto md:py-2"
         >
           Consultar
         </button>
@@ -139,126 +143,239 @@ export default function SummaryReport() {
       )}
 
       {!loading && !error && summaries.length > 0 && (
-        <div className="overflow-x-auto">
-          <table className="w-full text-left text-sm">
-            <thead>
-              <tr className="border-b border-gray-200 text-xs uppercase text-gray-500">
-                <th className="pb-2 pr-4 font-medium">Fecha</th>
-                <th className="pb-2 pr-4 font-medium">Inicio</th>
-                <th className="pb-2 pr-4 font-medium">Llegadas</th>
-                <th className="pb-2 pr-4 font-medium">Usos</th>
-                <th className="pb-2 pr-4 font-medium">Salidas</th>
-                <th className="pb-2 pr-4 font-medium">Quedo</th>
-                <th className="pb-2 font-medium"></th>
-              </tr>
-            </thead>
-            <tbody>
-              {summaries.map((s) => {
-                const isOpen = expanded.has(s.day)
-                const dayMovements = movementsByDay[s.day]
-                const dayLoading = movementsLoading[s.day]
-                const dayError = movementsError[s.day]
+        <>
+          <div className="hidden overflow-x-auto md:block">
+            <table className="w-full text-left text-sm">
+              <thead>
+                <tr className="border-b border-gray-200 text-xs uppercase text-gray-500">
+                  <th className="pb-2 pr-4 font-medium">Fecha</th>
+                  <th className="pb-2 pr-4 font-medium">Inicio</th>
+                  <th className="pb-2 pr-4 font-medium">Llegadas</th>
+                  <th className="pb-2 pr-4 font-medium">Usos</th>
+                  <th className="pb-2 pr-4 font-medium">Salidas</th>
+                  <th className="pb-2 pr-4 font-medium">Quedo</th>
+                  <th className="pb-2 font-medium"></th>
+                </tr>
+              </thead>
+              <tbody>
+                {summaries.map((s) => {
+                  const isOpen = expanded.has(s.day)
+                  const dayMovements = movementsByDay[s.day]
+                  const dayLoading = movementsLoading[s.day]
+                  const dayError = movementsError[s.day]
 
-                return (
-                  <Fragment key={s.day}>
-                    <tr className="border-b border-gray-100 last:border-0">
-                      <td className="py-2.5 pr-4 font-medium text-gray-800">{s.day}</td>
-                      <td className="py-2.5 pr-4 text-gray-600">{s.inicio}</td>
-                      <td className="py-2.5 pr-4 text-gray-600">{s.llegadas}</td>
-                      <td className="py-2.5 pr-4 text-gray-600">{s.usos}</td>
-                      <td className="py-2.5 pr-4 text-gray-600">{s.salidas}</td>
-                      <td className="py-2.5 pr-4 text-gray-600">{s.quedo}</td>
-                      <td className="py-2.5">
-                        <button
-                          onClick={() => toggleDay(s.day)}
-                          aria-label={isOpen ? 'Colapsar movimientos' : 'Ver movimientos'}
-                          className="cursor-pointer rounded p-1 text-gray-500 hover:bg-gray-100 hover:text-gray-700"
-                        >
-                          <svg
-                            className={`h-4 w-4 transition-transform ${isOpen ? 'rotate-180' : ''}`}
-                            viewBox="0 0 20 20"
-                            fill="currentColor"
+                  return (
+                    <Fragment key={s.day}>
+                      <tr className="border-b border-gray-100 last:border-0">
+                        <td className="py-2.5 pr-4 font-medium text-gray-800">{formatDMY(s.day)}</td>
+                        <td className="py-2.5 pr-4 text-gray-600">{s.inicio}</td>
+                        <td className="py-2.5 pr-4 text-gray-600">{s.llegadas}</td>
+                        <td className="py-2.5 pr-4 text-gray-600">{s.usos}</td>
+                        <td className="py-2.5 pr-4 text-gray-600">{s.salidas}</td>
+                        <td className="py-2.5 pr-4 text-gray-600">{s.quedo}</td>
+                        <td className="py-2.5">
+                          <button
+                            onClick={() => toggleDay(s.day)}
+                            aria-label={isOpen ? 'Colapsar movimientos' : 'Ver movimientos'}
+                            className="cursor-pointer rounded p-1 text-gray-500 hover:bg-gray-100 hover:text-gray-700"
                           >
-                            <path
-                              fillRule="evenodd"
-                              d="M5.23 7.21a.75.75 0 011.06.02L10 11.17l3.71-3.94a.75.75 0 111.08 1.04l-4.25 4.5a.75.75 0 01-1.08 0l-4.25-4.5a.75.75 0 01.02-1.06z"
-                              clipRule="evenodd"
-                            />
-                          </svg>
-                        </button>
-                      </td>
-                    </tr>
-
-                    {isOpen && (
-                      <tr className="bg-gray-50">
-                        <td colSpan={7} className="px-4 py-3">
-                          {dayLoading && (
-                            <div className="animate-pulse rounded-lg bg-gray-100 p-3">
-                              <div className="h-4 w-2/3 rounded bg-gray-200" />
-                            </div>
-                          )}
-
-                          {!dayLoading && dayError && (
-                            <div className="rounded-lg border border-red-200 bg-red-50 p-3 text-sm text-red-700">
-                              <p>{dayError}</p>
-                              <button
-                                onClick={() => fetchDay(s.day)}
-                                className="mt-2 cursor-pointer rounded bg-red-600 px-3 py-1 text-xs text-white hover:bg-red-700"
-                              >
-                                Reintentar
-                              </button>
-                            </div>
-                          )}
-
-                          {!dayLoading && !dayError && dayMovements && dayMovements.length === 0 && (
-                            <p className="text-gray-500">Sin movimientos ese día.</p>
-                          )}
-
-                          {!dayLoading && !dayError && dayMovements && dayMovements.length > 0 && (
-                            <table className="w-full text-left text-sm">
-                              <thead>
-                                <tr className="border-b border-gray-200 text-xs uppercase text-gray-500">
-                                  <th className="pb-2 pr-4 font-medium">Quién</th>
-                                  <th className="pb-2 pr-4 font-medium">Tipo</th>
-                                  <th className="pb-2 pr-4 font-medium">Costales</th>
-                                  <th className="pb-2 font-medium">Hora</th>
-                                </tr>
-                              </thead>
-                              <tbody>
-                                {dayMovements.map((m) => (
-                                  <tr key={m.id} className="border-b border-gray-100 last:border-0">
-                                    <td className="py-2.5 pr-4 font-medium text-gray-800">
-                                      {m.employee_name}
-                                    </td>
-                                    <td className="py-2.5 pr-4">
-                                      <MovementBadge m={m} />
-                                      {m.type === 'salida' && m.destination_name && (
-                                        <p className="mt-0.5 text-xs text-gray-500">
-                                          a {m.destination_name}
-                                        </p>
-                                      )}
-                                    </td>
-                                    <td className="py-2.5 pr-4 text-gray-600">{m.sacks}</td>
-                                    <td className="py-2.5 text-gray-600">
-                                      {new Date(m.created_at).toLocaleTimeString([], {
-                                        hour: '2-digit',
-                                        minute: '2-digit',
-                                      })}
-                                    </td>
-                                  </tr>
-                                ))}
-                              </tbody>
-                            </table>
-                          )}
+                            <svg
+                              className={`h-4 w-4 transition-transform ${isOpen ? 'rotate-180' : ''}`}
+                              viewBox="0 0 20 20"
+                              fill="currentColor"
+                            >
+                              <path
+                                fillRule="evenodd"
+                                d="M5.23 7.21a.75.75 0 011.06.02L10 11.17l3.71-3.94a.75.75 0 111.08 1.04l-4.25 4.5a.75.75 0 01-1.08 0l-4.25-4.5a.75.75 0 01.02-1.06z"
+                                clipRule="evenodd"
+                              />
+                            </svg>
+                          </button>
                         </td>
                       </tr>
-                    )}
-                  </Fragment>
-                )
-              })}
-            </tbody>
-          </table>
-        </div>
+
+                      {isOpen && (
+                        <tr className="bg-gray-50">
+                          <td colSpan={7} className="px-4 py-3">
+                            {dayLoading && (
+                              <div className="animate-pulse rounded-lg bg-gray-100 p-3">
+                                <div className="h-4 w-2/3 rounded bg-gray-200" />
+                              </div>
+                            )}
+
+                            {!dayLoading && dayError && (
+                              <div className="rounded-lg border border-red-200 bg-red-50 p-3 text-sm text-red-700">
+                                <p>{dayError}</p>
+                                <button
+                                  onClick={() => fetchDay(s.day)}
+                                  className="mt-2 cursor-pointer rounded bg-red-600 px-3 py-1 text-xs text-white hover:bg-red-700"
+                                >
+                                  Reintentar
+                                </button>
+                              </div>
+                            )}
+
+                            {!dayLoading && !dayError && dayMovements && dayMovements.length === 0 && (
+                              <p className="text-gray-500">Sin movimientos ese día.</p>
+                            )}
+
+                            {!dayLoading && !dayError && dayMovements && dayMovements.length > 0 && (
+                              <table className="w-full text-left text-sm">
+                                <thead>
+                                  <tr className="border-b border-gray-200 text-xs uppercase text-gray-500">
+                                    <th className="pb-2 pr-4 font-medium">Quién</th>
+                                    <th className="pb-2 pr-4 font-medium">Tipo</th>
+                                    <th className="pb-2 pr-4 font-medium">Costales</th>
+                                    <th className="pb-2 font-medium">Hora</th>
+                                  </tr>
+                                </thead>
+                                <tbody>
+                                  {dayMovements.map((m) => (
+                                    <tr key={m.id} className="border-b border-gray-100 last:border-0">
+                                      <td className="py-2.5 pr-4 font-medium text-gray-800">
+                                        {m.employee_name}
+                                      </td>
+                                      <td className="py-2.5 pr-4">
+                                        <MovementBadge m={m} />
+                                        <MovementNote m={m} />
+                                      </td>
+                                      <td className="py-2.5 pr-4 text-gray-600">{m.sacks}</td>
+                                      <td className="py-2.5 text-gray-600">
+                                        {new Date(m.created_at).toLocaleTimeString([], {
+                                          hour: '2-digit',
+                                          minute: '2-digit',
+                                        })}
+                                      </td>
+                                    </tr>
+                                  ))}
+                                </tbody>
+                              </table>
+                            )}
+                          </td>
+                        </tr>
+                      )}
+                    </Fragment>
+                  )
+                })}
+              </tbody>
+            </table>
+          </div>
+
+          <div className="space-y-3 md:hidden">
+            {summaries.map((s) => {
+              const isOpen = expanded.has(s.day)
+              const dayMovements = movementsByDay[s.day]
+              const dayLoading = movementsLoading[s.day]
+              const dayError = movementsError[s.day]
+
+              return (
+                <div key={s.day} className="rounded-lg border border-gray-200 p-3">
+                  <button
+                    onClick={() => toggleDay(s.day)}
+                    aria-label={isOpen ? 'Colapsar movimientos' : 'Ver movimientos'}
+                    className="flex w-full cursor-pointer items-center justify-between gap-2 text-left"
+                  >
+                    <div>
+                      <p className="font-medium text-gray-800">{formatDMY(s.day)}</p>
+                      <p className="text-xs text-gray-500">
+                        Quedó: <span className="font-semibold text-gray-700">{s.quedo}</span> costales
+                      </p>
+                    </div>
+                    <span className="flex items-center gap-1 text-xs font-medium text-blue-600">
+                      {isOpen ? 'Ocultar' : 'Ver'}
+                      <svg
+                        className={`h-4 w-4 transition-transform ${isOpen ? 'rotate-180' : ''}`}
+                        viewBox="0 0 20 20"
+                        fill="currentColor"
+                      >
+                        <path
+                          fillRule="evenodd"
+                          d="M5.23 7.21a.75.75 0 011.06.02L10 11.17l3.71-3.94a.75.75 0 111.08 1.04l-4.25 4.5a.75.75 0 01-1.08 0l-4.25-4.5a.75.75 0 01.02-1.06z"
+                          clipRule="evenodd"
+                        />
+                      </svg>
+                    </span>
+                  </button>
+
+                  <div className="mt-3 grid grid-cols-2 gap-2">
+                    <div className="rounded-lg bg-gray-50 p-2">
+                      <p className="text-xs text-gray-500">Inicio</p>
+                      <p className="text-base font-semibold text-gray-800">{s.inicio}</p>
+                    </div>
+                    <div className="rounded-lg bg-gray-50 p-2">
+                      <p className="text-xs text-gray-500">Llegadas</p>
+                      <p className="text-base font-semibold text-blue-700">{s.llegadas}</p>
+                    </div>
+                    <div className="rounded-lg bg-gray-50 p-2">
+                      <p className="text-xs text-gray-500">Usos</p>
+                      <p className="text-base font-semibold text-orange-700">{s.usos}</p>
+                    </div>
+                    <div className="rounded-lg bg-gray-50 p-2">
+                      <p className="text-xs text-gray-500">Salidas</p>
+                      <p className="text-base font-semibold text-purple-700">{s.salidas}</p>
+                    </div>
+                  </div>
+
+                  {isOpen && (
+                    <div className="mt-3 border-t border-gray-100 pt-3">
+                      {dayLoading && (
+                        <div className="animate-pulse rounded-lg bg-gray-100 p-3">
+                          <div className="h-4 w-2/3 rounded bg-gray-200" />
+                        </div>
+                      )}
+
+                      {!dayLoading && dayError && (
+                        <div className="rounded-lg border border-red-200 bg-red-50 p-3 text-sm text-red-700">
+                          <p>{dayError}</p>
+                          <button
+                            onClick={() => fetchDay(s.day)}
+                            className="mt-2 cursor-pointer rounded bg-red-600 px-3 py-1 text-xs text-white hover:bg-red-700"
+                          >
+                            Reintentar
+                          </button>
+                        </div>
+                      )}
+
+                      {!dayLoading && !dayError && dayMovements && dayMovements.length === 0 && (
+                        <p className="text-sm text-gray-500">Sin movimientos ese día.</p>
+                      )}
+
+                      {!dayLoading && !dayError && dayMovements && dayMovements.length > 0 && (
+                        <div className="space-y-2">
+                          {dayMovements.map((m) => (
+                            <div
+                              key={m.id}
+                              className="flex items-center justify-between gap-2 rounded-lg border border-gray-100 bg-gray-50 p-3"
+                            >
+                              <div className="min-w-0">
+                                <p className="truncate text-sm font-medium text-gray-800">
+                                  {m.employee_name}
+                                </p>
+                                <div className="mt-0.5">
+                                  <MovementBadge m={m} />
+                                  <MovementNote m={m} />
+                                </div>
+                              </div>
+                              <div className="text-right">
+                                <p className="text-base font-semibold text-gray-800">{m.sacks}</p>
+                                <p className="text-xs text-gray-500">
+                                  {new Date(m.created_at).toLocaleTimeString([], {
+                                    hour: '2-digit',
+                                    minute: '2-digit',
+                                  })}
+                                </p>
+                              </div>
+                            </div>
+                          ))}
+                        </div>
+                      )}
+                    </div>
+                  )}
+                </div>
+              )
+            })}
+          </div>
+        </>
       )}
     </div>
   )

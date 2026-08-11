@@ -1,1 +1,25 @@
 @import "tailwindcss";
+
+@layer base {
+  @media (max-width: 767px) {
+    input,
+    select,
+    textarea {
+      font-size: 1rem !important;
+    }
+  }
+}
+
+@media (max-width: 767px) {
+  .react-datepicker-popper {
+    max-width: calc(100vw - 2rem);
+  }
+
+  .react-datepicker__portal {
+    padding: 1rem;
+  }
+
+  .react-datepicker__portal .react-datepicker {
+    max-width: calc(100vw - 2rem);
+  }
+}

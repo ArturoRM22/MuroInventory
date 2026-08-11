@@ -59,14 +59,14 @@ export default function Tortillerias() {
 
   return (
     <div className="mx-auto max-w-4xl px-4 py-8">
-      <div className="mb-6 flex items-center justify-between">
-        <h1 className="text-2xl font-semibold text-gray-800">Tortillerías</h1>
+      <div className="mb-6 flex flex-wrap items-center justify-between gap-3">
+        <h1 className="text-xl font-semibold text-gray-800 md:text-2xl">Tortillerías</h1>
         <button
           onClick={() => {
             setEditing(null)
             setFormOpen(true)
           }}
-          className="cursor-pointer rounded-lg bg-blue-600 px-4 py-2 text-sm font-medium text-white hover:bg-blue-700"
+          className="cursor-pointer rounded-lg bg-blue-600 px-4 py-2.5 text-sm font-medium text-white hover:bg-blue-700 md:py-2"
         >
           Nueva Tortillería
         </button>
@@ -92,11 +92,13 @@ export default function Tortillerias() {
           ))}
         </div>
       ) : (
-        <div className="overflow-x-auto rounded-xl border border-gray-200 bg-white p-6 shadow-sm">
+        <>
           {list.length === 0 ? (
             <p className="text-gray-500">Sin tortillerías registradas.</p>
           ) : (
-            <table className="w-full text-left text-sm">
+            <>
+              <div className="hidden overflow-x-auto rounded-xl border border-gray-200 bg-white p-6 shadow-sm md:block">
+                <table className="w-full text-left text-sm">
               <thead>
                 <tr className="border-b border-gray-200 text-xs uppercase text-gray-500">
                   <th className="pb-2 pr-4 font-medium">Nombre</th>
@@ -132,7 +134,7 @@ export default function Tortillerias() {
                           }}
                           title="Editar"
                           aria-label={`Editar ${t.name}`}
-                          className="cursor-pointer rounded-lg p-2 text-gray-400 transition hover:bg-blue-50 hover:text-blue-600"
+                          className="cursor-pointer rounded-lg p-2.5 text-gray-400 transition hover:bg-blue-50 hover:text-blue-600 md:p-2"
                         >
                           <svg
                             xmlns="http://www.w3.org/2000/svg"
@@ -156,7 +158,7 @@ export default function Tortillerias() {
                           }}
                           title="Eliminar"
                           aria-label={`Eliminar ${t.name}`}
-                          className="cursor-pointer rounded-lg p-2 text-gray-400 transition hover:bg-red-50 hover:text-red-600"
+                          className="cursor-pointer rounded-lg p-2.5 text-gray-400 transition hover:bg-red-50 hover:text-red-600 md:p-2"
                         >
                           <svg
                             xmlns="http://www.w3.org/2000/svg"
@@ -178,9 +180,89 @@ export default function Tortillerias() {
                   </tr>
                 ))}
               </tbody>
-            </table>
+              </table>
+              </div>
+
+              <div className="space-y-3 md:hidden">
+                {list.map((t) => (
+                  <div key={t.id} className="rounded-xl border border-gray-200 bg-white p-4 shadow-sm">
+                    <div className="flex items-start justify-between gap-2">
+                      <div className="min-w-0">
+                        <p className="truncate font-medium text-gray-800">{t.name}</p>
+                        <p className="mt-0.5 text-xs text-gray-500">
+                          {t.is_main ? 'Principal' : `Sucursal de ${nameOf(t.main_tortilleria_id) ?? '—'}`}
+                        </p>
+                      </div>
+                      {t.is_main ? (
+                        <span className="rounded-full bg-blue-100 px-2.5 py-0.5 text-xs font-medium text-blue-700">
+                          Principal
+                        </span>
+                      ) : (
+                        <span className="rounded-full bg-gray-100 px-2.5 py-0.5 text-xs font-medium text-gray-600">
+                          Sucursal
+                        </span>
+                      )}
+                    </div>
+                    <div className="mt-3 flex items-center justify-between">
+                      <p className="text-sm text-gray-600">
+                        Existencia inicial:{' '}
+                        <span className="font-semibold text-gray-800">{t.initial_stock}</span>
+                      </p>
+                      <div className="flex gap-1">
+                        <button
+                          onClick={() => {
+                            setEditing(t)
+                            setFormOpen(true)
+                          }}
+                          aria-label={`Editar ${t.name}`}
+                          className="flex h-11 w-11 cursor-pointer items-center justify-center rounded-lg text-gray-400 transition hover:bg-blue-50 hover:text-blue-600"
+                        >
+                          <svg
+                            xmlns="http://www.w3.org/2000/svg"
+                            fill="none"
+                            viewBox="0 0 24 24"
+                            strokeWidth={1.5}
+                            stroke="currentColor"
+                            className="h-5 w-5"
+                          >
+                            <path
+                              strokeLinecap="round"
+                              strokeLinejoin="round"
+                              d="m16.862 4.487 1.687-1.688a1.875 1.875 0 1 1 2.652 2.652L6.832 19.82a4.5 4.5 0 0 1-1.897 1.13l-2.685.8.8-2.685a4.5 4.5 0 0 1 1.13-1.897L16.863 4.487Zm0 0L19.5 7.125"
+                            />
+                          </svg>
+                        </button>
+                        <button
+                          onClick={() => {
+                            setDeleteError(null)
+                            setPendingDelete(t)
+                          }}
+                          aria-label={`Eliminar ${t.name}`}
+                          className="flex h-11 w-11 cursor-pointer items-center justify-center rounded-lg text-gray-400 transition hover:bg-red-50 hover:text-red-600"
+                        >
+                          <svg
+                            xmlns="http://www.w3.org/2000/svg"
+                            fill="none"
+                            viewBox="0 0 24 24"
+                            strokeWidth={1.5}
+                            stroke="currentColor"
+                            className="h-5 w-5"
+                          >
+                            <path
+                              strokeLinecap="round"
+                              strokeLinejoin="round"
+                              d="m14.74 9-.346 9m-4.788 0L9.26 9m9.968-3.21c.342.052.682.107 1.022.166m-1.022-.165L18.16 19.673a2.25 2.25 0 0 1-2.244 2.077H8.084a2.25 2.25 0 0 1-2.244-2.077L4.772 5.79m14.456 0a48.108 48.108 0 0 0-3.478-.397m-12 .562c.34-.059.68-.114 1.022-.165m0 0a48.11 48.11 0 0 1 3.478-.397m7.5 0v-.916c0-1.18-.91-2.164-2.09-2.201a51.964 51.964 0 0 0-3.32 0c-1.18.037-2.09 1.022-2.09 2.201v.916m7.5 0a48.667 48.667 0 0 0-7.5 0"
+                            />
+                          </svg>
+                        </button>
+                      </div>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </>
           )}
-        </div>
+        </>
       )}
 
       {list.length > 0 && <TortilleriaUsersSection tortillerias={list} />}

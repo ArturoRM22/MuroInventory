@@ -15,6 +15,8 @@ export interface Movement {
   tortilleria_id: number
   destination_tortilleria_id: number | null
   destination_name: string | null
+  source_tortilleria_id: number | null
+  source_name: string | null
   employee_name: string
   created_by: number
   created_at: string

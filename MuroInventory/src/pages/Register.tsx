@@ -92,7 +92,7 @@ export default function Register() {
 
   return (
     <div className="mx-auto max-w-md px-4 py-8">
-      <div className="rounded-xl border border-gray-200 bg-white p-8 shadow-sm">
+      <div className="rounded-xl border border-gray-200 bg-white p-6 shadow-sm md:p-8">
         <h1 className="mb-6 text-xl font-bold text-gray-800">Registrar Usuario</h1>
 
         <form onSubmit={handleSubmit} className="space-y-4">

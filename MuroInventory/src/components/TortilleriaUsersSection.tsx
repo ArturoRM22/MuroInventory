@@ -88,7 +88,7 @@ export default function TortilleriaUsersSection({ tortillerias }: TortilleriaUse
   const selected = tortillerias.find((t) => t.id === selectedId) ?? null
 
   return (
-    <div className="mt-8 rounded-xl border border-gray-200 bg-white p-6 shadow-sm">
+    <div className="mt-8 rounded-xl border border-gray-200 bg-white p-4 shadow-sm md:p-6">
       <h2 className="mb-4 text-lg font-semibold text-gray-800">Usuarios por Tortillería</h2>
 
       {usersError && (
@@ -126,59 +126,100 @@ export default function TortilleriaUsersSection({ tortillerias }: TortilleriaUse
           {membersError}
         </p>
       ) : (
-        <div className="overflow-x-auto rounded-lg border border-gray-200">
+        <div className="rounded-lg border border-gray-200">
           {members.length === 0 ? (
             <p className="p-4 text-sm text-gray-500">Sin usuarios asignados.</p>
           ) : (
-            <table className="w-full text-left text-sm">
-              <thead>
-                <tr className="border-b border-gray-200 bg-gray-50 text-xs uppercase text-gray-500">
-                  <th className="px-4 py-2 font-medium">Usuario</th>
-                  <th className="px-4 py-2 font-medium">Rol</th>
-                  <th className="px-4 py-2 font-medium" />
-                </tr>
-              </thead>
-              <tbody>
+            <>
+              <div className="hidden overflow-x-auto md:block">
+                <table className="w-full text-left text-sm">
+                  <thead>
+                    <tr className="border-b border-gray-200 bg-gray-50 text-xs uppercase text-gray-500">
+                      <th className="px-4 py-2 font-medium">Usuario</th>
+                      <th className="px-4 py-2 font-medium">Rol</th>
+                      <th className="px-4 py-2 font-medium" />
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {members.map((m) => (
+                      <tr key={m.id} className="border-b border-gray-100 last:border-0">
+                        <td className="px-4 py-2.5 font-medium text-gray-800">{m.name}</td>
+                        <td className="px-4 py-2.5 text-gray-600">{ROLE_LABELS[m.role]}</td>
+                        <td className="px-4 py-2.5 text-right">
+                          <button
+                            onClick={() => {
+                              setRemoveError(null)
+                              setPendingRemove(m)
+                            }}
+                            title="Quitar usuario"
+                            aria-label={`Quitar a ${m.name}`}
+                            className="cursor-pointer rounded-lg p-2.5 text-gray-400 transition hover:bg-red-50 hover:text-red-600 md:p-2"
+                          >
+                            <svg
+                              xmlns="http://www.w3.org/2000/svg"
+                              fill="none"
+                              viewBox="0 0 24 24"
+                              strokeWidth={1.5}
+                              stroke="currentColor"
+                              className="h-4 w-4"
+                            >
+                              <path
+                                strokeLinecap="round"
+                                strokeLinejoin="round"
+                                d="M15 12H9m12 0a9 9 0 1 1-18 0 9 9 0 0 1 18 0Z"
+                              />
+                            </svg>
+                          </button>
+                        </td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
+
+              <div className="space-y-3 p-3 md:hidden">
                 {members.map((m) => (
-                  <tr key={m.id} className="border-b border-gray-100 last:border-0">
-                    <td className="px-4 py-2.5 font-medium text-gray-800">{m.name}</td>
-                    <td className="px-4 py-2.5 text-gray-600">{ROLE_LABELS[m.role]}</td>
-                    <td className="px-4 py-2.5 text-right">
-                      <button
-                        onClick={() => {
-                          setRemoveError(null)
-                          setPendingRemove(m)
-                        }}
-                        title="Quitar usuario"
-                        aria-label={`Quitar a ${m.name}`}
-                        className="cursor-pointer rounded-lg p-2 text-gray-400 transition hover:bg-red-50 hover:text-red-600"
+                  <div
+                    key={m.id}
+                    className="flex items-center justify-between gap-2 rounded-lg border border-gray-200 p-3"
+                  >
+                    <div className="min-w-0">
+                      <p className="truncate font-medium text-gray-800">{m.name}</p>
+                      <p className="text-xs text-gray-500">{ROLE_LABELS[m.role]}</p>
+                    </div>
+                    <button
+                      onClick={() => {
+                        setRemoveError(null)
+                        setPendingRemove(m)
+                      }}
+                      aria-label={`Quitar a ${m.name}`}
+                      className="flex h-11 w-11 shrink-0 cursor-pointer items-center justify-center rounded-lg text-gray-400 transition hover:bg-red-50 hover:text-red-600"
+                    >
+                      <svg
+                        xmlns="http://www.w3.org/2000/svg"
+                        fill="none"
+                        viewBox="0 0 24 24"
+                        strokeWidth={1.5}
+                        stroke="currentColor"
+                        className="h-5 w-5"
                       >
-                        <svg
-                          xmlns="http://www.w3.org/2000/svg"
-                          fill="none"
-                          viewBox="0 0 24 24"
-                          strokeWidth={1.5}
-                          stroke="currentColor"
-                          className="h-4 w-4"
-                        >
-                          <path
-                            strokeLinecap="round"
-                            strokeLinejoin="round"
-                            d="M15 12H9m12 0a9 9 0 1 1-18 0 9 9 0 0 1 18 0Z"
-                          />
-                        </svg>
-                      </button>
-                    </td>
-                  </tr>
+                        <path
+                          strokeLinecap="round"
+                          strokeLinejoin="round"
+                          d="M15 12H9m12 0a9 9 0 1 1-18 0 9 9 0 0 1 18 0Z"
+                        />
+                      </svg>
+                    </button>
+                  </div>
                 ))}
-              </tbody>
-            </table>
+              </div>
+            </>
           )}
         </div>
       )}
 
-      <div className="mt-4 flex max-w-md items-end gap-2">
-        <div className="flex-1">
+      <div className="mt-4 flex max-w-md flex-col items-stretch gap-3 md:flex-row md:items-end md:gap-2">
+        <div className="min-w-0 flex-1">
           <label htmlFor="ut-user" className="mb-1 block text-sm font-medium text-gray-600">
             Agregar usuario
           </label>
@@ -199,7 +240,7 @@ export default function TortilleriaUsersSection({ tortillerias }: TortilleriaUse
         <button
           onClick={handleAdd}
           disabled={adding || !selectedUserId || selectedId == null}
-          className="cursor-pointer rounded-lg bg-blue-600 px-4 py-2 text-sm font-medium text-white hover:bg-blue-700 disabled:cursor-not-allowed disabled:opacity-50"
+          className="w-full cursor-pointer rounded-lg bg-blue-600 px-4 py-2.5 text-sm font-medium text-white hover:bg-blue-700 disabled:cursor-not-allowed disabled:opacity-50 md:w-auto md:py-2"
         >
           {adding ? 'Agregando...' : 'Agregar'}
         </button>
