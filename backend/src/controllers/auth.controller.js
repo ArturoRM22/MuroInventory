@@ -1,6 +1,6 @@
 const bcrypt = require('bcryptjs');
 const jwt = require('jsonwebtoken');
-const { JWT_SECRET, JWT_EXPIRES_IN, BCRYPT_ROUNDS } = require('../config');
+const { JWT_SECRET, JWT_EXPIRES_IN, BCRYPT_ROUNDS, COOKIE } = require('../config');
 const { query } = require('../db/query');
 const { isNonEmptyString, isOneOf, isId, collectErrors } = require('../utils/validation');
 const { isTortilleriaAccessible } = require('../middleware/auth');
@@ -22,8 +22,8 @@ function signToken(user) {
 function setTokenCookie(res, token) {
   res.cookie(COOKIE_NAME, token, {
     httpOnly: true,
-    secure: process.env.NODE_ENV === 'production',
-    sameSite: 'lax',
+    secure: COOKIE.secure,
+    sameSite: COOKIE.sameSite,
     maxAge: msFromJWT(JWT_EXPIRES_IN),
     path: '/',
   });
@@ -170,8 +170,8 @@ async function login(req, res, next) {
 async function logout(req, res) {
   res.cookie(COOKIE_NAME, '', {
     httpOnly: true,
-    secure: process.env.NODE_ENV === 'production',
-    sameSite: 'lax',
+    secure: COOKIE.secure,
+    sameSite: COOKIE.sameSite,
     maxAge: 0,
     path: '/',
   });

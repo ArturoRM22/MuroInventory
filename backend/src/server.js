@@ -1,5 +1,6 @@
 const express = require('express');
 const cookieParser = require('cookie-parser');
+const cors = require('cors');
 const config = require('./config');
 const { errorHandler } = require('./middleware/error');
 
@@ -10,6 +11,13 @@ const summaryRoutes = require('./routes/summary.routes');
 const usersRoutes = require('./routes/users.routes');
   
 const app = express();
+app.set('trust proxy', 1);
+app.use(
+  cors({
+    origin: config.CLIENT_ORIGINS,
+    credentials: true,
+  })
+);
 app.use(express.json());
 app.use(cookieParser());
 

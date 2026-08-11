@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react'
 import { useNavigate, Outlet, Link, useLocation } from 'react-router-dom'
 import { useTortilleria } from '../context/tortilleria'
+import { apiUrl } from '../lib/config'
 
 export default function RootLayout() {
   const navigate = useNavigate()
@@ -14,7 +15,7 @@ export default function RootLayout() {
 
   function handleLogout() {
     setMenuOpen(false)
-    fetch('/api/auth/logout', { method: 'POST', credentials: 'include' })
+    fetch(apiUrl('/api/auth/logout'), { method: 'POST', credentials: 'include' })
       .catch(() => {})
       .finally(() => {
         sessionStorage.removeItem('user')

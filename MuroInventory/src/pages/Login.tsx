@@ -1,6 +1,7 @@
 import { useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { useTortilleria } from '../context/tortilleria'
+import { apiUrl } from '../lib/config'
 
 export default function Login() {
   const navigate = useNavigate()
@@ -15,7 +16,7 @@ export default function Login() {
     setSubmitting(true)
     setError(null)
 
-    fetch('/api/auth/login', {
+    fetch(apiUrl('/api/auth/login'), {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       credentials: 'include',

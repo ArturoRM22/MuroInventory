@@ -2,6 +2,7 @@ import { useEffect, useState } from 'react'
 import { Navigate } from 'react-router-dom'
 import { useTortilleria } from '../context/tortilleria'
 import { getJSON } from '../lib/api'
+import { apiUrl } from '../lib/config'
 import type { Tortilleria } from '../types'
 
 type UserRole = 'admin' | 'user'
@@ -59,7 +60,7 @@ export default function Register() {
 
     setSubmitting(true)
 
-    fetch('/api/auth/register', {
+    fetch(apiUrl('/api/auth/register'), {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       credentials: 'include',

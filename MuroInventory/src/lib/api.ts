@@ -1,10 +1,12 @@
+import { apiUrl } from './config'
+
 export function getJSON(url: string): Promise<any | null> {
   if (!sessionStorage.getItem('user')) {
     window.location.href = '/login'
     return Promise.resolve(null)
   }
 
-  return fetch(url, { credentials: 'include' })
+  return fetch(apiUrl(url), { credentials: 'include' })
     .then((res) => {
       if (res.status === 401) {
         sessionStorage.removeItem('user')
@@ -18,7 +20,7 @@ export function getJSON(url: string): Promise<any | null> {
 }
 
 export function deleteJSON(url: string): Promise<void> {
-  return fetch(url, { method: 'DELETE', credentials: 'include' }).then((res) => {
+  return fetch(apiUrl(url), { method: 'DELETE', credentials: 'include' }).then((res) => {
     if (res.status === 401) {
       sessionStorage.removeItem('user')
       window.location.href = '/login'
@@ -36,7 +38,7 @@ export function sendJSON(
   url: string,
   body: Record<string, unknown>
 ): Promise<any> {
-  return fetch(url, {
+  return fetch(apiUrl(url), {
     method,
     headers: { 'Content-Type': 'application/json' },
     credentials: 'include',

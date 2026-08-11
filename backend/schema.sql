@@ -2,7 +2,7 @@
 -- PostgreSQL database dump
 --
 
-\restrict mvjP9ynCBaOAeFtmqJCbRBK9yshHF2UcZaXsSg7K7yvGoyoBO68dorPKBW6LmdO
+\restrict jSbfIopqlFBBHeaN1socpKYMCQwCVycOXLzXei9eS0v2HR1ewhY9cVwIAMRHpwk
 
 -- Dumped from database version 16.14 (Ubuntu 16.14-0ubuntu0.24.04.1)
 -- Dumped by pg_dump version 16.14 (Ubuntu 16.14-0ubuntu0.24.04.1)
@@ -23,7 +23,7 @@ SET default_tablespace = '';
 SET default_table_access_method = heap;
 
 --
--- Name: movements; Type: TABLE; Schema: public; Owner: arturo
+-- Name: movements; Type: TABLE; Schema: public; Owner: -
 --
 
 CREATE TABLE public.movements (
@@ -42,10 +42,8 @@ CREATE TABLE public.movements (
 );
 
 
-ALTER TABLE public.movements OWNER TO arturo;
-
 --
--- Name: movements_id_seq; Type: SEQUENCE; Schema: public; Owner: arturo
+-- Name: movements_id_seq; Type: SEQUENCE; Schema: public; Owner: -
 --
 
 CREATE SEQUENCE public.movements_id_seq
@@ -57,17 +55,15 @@ CREATE SEQUENCE public.movements_id_seq
     CACHE 1;
 
 
-ALTER SEQUENCE public.movements_id_seq OWNER TO arturo;
-
 --
--- Name: movements_id_seq; Type: SEQUENCE OWNED BY; Schema: public; Owner: arturo
+-- Name: movements_id_seq; Type: SEQUENCE OWNED BY; Schema: public; Owner: -
 --
 
 ALTER SEQUENCE public.movements_id_seq OWNED BY public.movements.id;
 
 
 --
--- Name: tortillerias; Type: TABLE; Schema: public; Owner: arturo
+-- Name: tortillerias; Type: TABLE; Schema: public; Owner: -
 --
 
 CREATE TABLE public.tortillerias (
@@ -80,10 +76,8 @@ CREATE TABLE public.tortillerias (
 );
 
 
-ALTER TABLE public.tortillerias OWNER TO arturo;
-
 --
--- Name: tortillerias_id_seq; Type: SEQUENCE; Schema: public; Owner: arturo
+-- Name: tortillerias_id_seq; Type: SEQUENCE; Schema: public; Owner: -
 --
 
 CREATE SEQUENCE public.tortillerias_id_seq
@@ -95,17 +89,15 @@ CREATE SEQUENCE public.tortillerias_id_seq
     CACHE 1;
 
 
-ALTER SEQUENCE public.tortillerias_id_seq OWNER TO arturo;
-
 --
--- Name: tortillerias_id_seq; Type: SEQUENCE OWNED BY; Schema: public; Owner: arturo
+-- Name: tortillerias_id_seq; Type: SEQUENCE OWNED BY; Schema: public; Owner: -
 --
 
 ALTER SEQUENCE public.tortillerias_id_seq OWNED BY public.tortillerias.id;
 
 
 --
--- Name: user_tortillerias; Type: TABLE; Schema: public; Owner: arturo
+-- Name: user_tortillerias; Type: TABLE; Schema: public; Owner: -
 --
 
 CREATE TABLE public.user_tortillerias (
@@ -114,10 +106,8 @@ CREATE TABLE public.user_tortillerias (
 );
 
 
-ALTER TABLE public.user_tortillerias OWNER TO arturo;
-
 --
--- Name: users; Type: TABLE; Schema: public; Owner: arturo
+-- Name: users; Type: TABLE; Schema: public; Owner: -
 --
 
 CREATE TABLE public.users (
@@ -129,10 +119,8 @@ CREATE TABLE public.users (
 );
 
 
-ALTER TABLE public.users OWNER TO arturo;
-
 --
--- Name: users_id_seq; Type: SEQUENCE; Schema: public; Owner: arturo
+-- Name: users_id_seq; Type: SEQUENCE; Schema: public; Owner: -
 --
 
 CREATE SEQUENCE public.users_id_seq
@@ -144,123 +132,36 @@ CREATE SEQUENCE public.users_id_seq
     CACHE 1;
 
 
-ALTER SEQUENCE public.users_id_seq OWNER TO arturo;
-
 --
--- Name: users_id_seq; Type: SEQUENCE OWNED BY; Schema: public; Owner: arturo
+-- Name: users_id_seq; Type: SEQUENCE OWNED BY; Schema: public; Owner: -
 --
 
 ALTER SEQUENCE public.users_id_seq OWNED BY public.users.id;
 
 
 --
--- Name: movements id; Type: DEFAULT; Schema: public; Owner: arturo
+-- Name: movements id; Type: DEFAULT; Schema: public; Owner: -
 --
 
 ALTER TABLE ONLY public.movements ALTER COLUMN id SET DEFAULT nextval('public.movements_id_seq'::regclass);
 
 
 --
--- Name: tortillerias id; Type: DEFAULT; Schema: public; Owner: arturo
+-- Name: tortillerias id; Type: DEFAULT; Schema: public; Owner: -
 --
 
 ALTER TABLE ONLY public.tortillerias ALTER COLUMN id SET DEFAULT nextval('public.tortillerias_id_seq'::regclass);
 
 
 --
--- Name: users id; Type: DEFAULT; Schema: public; Owner: arturo
+-- Name: users id; Type: DEFAULT; Schema: public; Owner: -
 --
 
 ALTER TABLE ONLY public.users ALTER COLUMN id SET DEFAULT nextval('public.users_id_seq'::regclass);
 
 
 --
--- Data for Name: movements; Type: TABLE DATA; Schema: public; Owner: arturo
---
-
-COPY public.movements (id, day, type, sacks, tortilleria_id, employee_name, created_by, created_at, destination_tortilleria_id, transfer_group) FROM stdin;
-1	2026-07-31	llegada	10	1	Israel	1	2026-07-31 15:27:20.694966-06	\N	\N
-2	2026-07-31	uso	5	1	Israel	1	2026-07-31 15:27:32.926054-06	\N	\N
-3	2026-07-29	llegada	3	1	Juan	1	2026-07-31 15:32:29.333584-06	\N	\N
-4	2026-07-30	uso	5	1	Juan	1	2026-07-31 15:32:46.338114-06	\N	\N
-5	2026-07-30	llegada	20	1	Juan	1	2026-07-31 15:32:56.314109-06	\N	\N
-6	2026-07-28	llegada	50	1	Juan	1	2026-07-31 15:34:25.589598-06	\N	\N
-7	2026-07-28	uso	5	1	Juan	1	2026-07-31 15:34:36.614763-06	\N	\N
-8	2026-07-31	uso	1	1	Guera	1	2026-07-31 15:58:36.898382-06	\N	\N
-9	2026-07-28	uso	5	1	Guera	1	2026-07-31 15:59:47.66371-06	\N	\N
-10	2026-07-31	llegada	2	1	Guera	1	2026-07-31 16:20:25.757241-06	\N	\N
-11	2026-08-05	llegada	20	1	Guera	1	2026-08-05 15:43:15.70372-06	\N	\N
-12	2026-08-05	uso	5	1	Israel	1	2026-08-05 15:43:23.398507-06	\N	\N
-13	2026-08-06	uso	1	1	Guera	1	2026-08-05 18:37:59.521421-06	\N	\N
-14	2026-08-06	llegada	10	1	Israel	1	2026-08-05 18:38:14.811634-06	\N	\N
-15	2026-08-05	llegada	1	1	Guera	1	2026-08-05 18:39:28.270454-06	\N	\N
-16	2026-08-06	llegada	1	1	Guera	3	2026-08-05 18:58:08.712782-06	\N	\N
-17	2026-08-06	uso	5	1	Israel	3	2026-08-05 18:58:23.787892-06	\N	\N
-18	2026-08-05	llegada	3	1	Guera	3	2026-08-05 18:59:56.545594-06	\N	\N
-19	2026-08-05	uso	2	1	Guera	3	2026-08-05 19:11:41.439512-06	\N	\N
-\.
-
-
---
--- Data for Name: tortillerias; Type: TABLE DATA; Schema: public; Owner: arturo
---
-
-COPY public.tortillerias (id, name, is_main, main_tortilleria_id, initial_stock) FROM stdin;
-1	Torre	t	\N	50
-2	Sucursal Norte	f	1	0
-\.
-
-
---
--- Data for Name: user_tortillerias; Type: TABLE DATA; Schema: public; Owner: arturo
---
-
-COPY public.user_tortillerias (user_id, tortilleria_id) FROM stdin;
-1	1
-4	1
-2	1
-3	1
-1	2
-7	1
-\.
-
-
---
--- Data for Name: users; Type: TABLE DATA; Schema: public; Owner: arturo
---
-
-COPY public.users (id, name, password, role) FROM stdin;
-1	admin	$2b$12$tSr41nO0cK7Gt.quS/XpFui/ZdUrvR3WqO2bsgvvML6VPm24gR9CS	admin
-2	usuarioTorre	$2b$10$UxbnwNNObwA5QvSAqT99euy2W4FANF1QPtUT0gwfAaoiWBMMR7IBy	user
-3	ARTURO	$2b$10$YvvYxnZtsjXTKNlVTjJQ9uzR9B6B1NKsMX8/QT6m2ecYX0vbi5HIe	admin
-4	usuarioPerla	$2b$10$ijL6L5e2NmJ9U5Wjl7gSDeNvjVmA9QM1y4/c9MYe0mudbXLzOUS0a	user
-7	usuarioVerde	$2b$10$HzGn/5h.6bn0.KTjKnSAiePeUxmDu4jTOVUfrf/9D5diPEwXa4fUi	user
-\.
-
-
---
--- Name: movements_id_seq; Type: SEQUENCE SET; Schema: public; Owner: arturo
---
-
-SELECT pg_catalog.setval('public.movements_id_seq', 23, true);
-
-
---
--- Name: tortillerias_id_seq; Type: SEQUENCE SET; Schema: public; Owner: arturo
---
-
-SELECT pg_catalog.setval('public.tortillerias_id_seq', 3, true);
-
-
---
--- Name: users_id_seq; Type: SEQUENCE SET; Schema: public; Owner: arturo
---
-
-SELECT pg_catalog.setval('public.users_id_seq', 7, true);
-
-
---
--- Name: movements movements_pkey; Type: CONSTRAINT; Schema: public; Owner: arturo
+-- Name: movements movements_pkey; Type: CONSTRAINT; Schema: public; Owner: -
 --
 
 ALTER TABLE ONLY public.movements
@@ -268,7 +169,7 @@ ALTER TABLE ONLY public.movements
 
 
 --
--- Name: tortillerias tortillerias_pkey; Type: CONSTRAINT; Schema: public; Owner: arturo
+-- Name: tortillerias tortillerias_pkey; Type: CONSTRAINT; Schema: public; Owner: -
 --
 
 ALTER TABLE ONLY public.tortillerias
@@ -276,7 +177,7 @@ ALTER TABLE ONLY public.tortillerias
 
 
 --
--- Name: user_tortillerias user_tortillerias_pkey; Type: CONSTRAINT; Schema: public; Owner: arturo
+-- Name: user_tortillerias user_tortillerias_pkey; Type: CONSTRAINT; Schema: public; Owner: -
 --
 
 ALTER TABLE ONLY public.user_tortillerias
@@ -284,7 +185,7 @@ ALTER TABLE ONLY public.user_tortillerias
 
 
 --
--- Name: users users_name_key; Type: CONSTRAINT; Schema: public; Owner: arturo
+-- Name: users users_name_key; Type: CONSTRAINT; Schema: public; Owner: -
 --
 
 ALTER TABLE ONLY public.users
@@ -292,7 +193,7 @@ ALTER TABLE ONLY public.users
 
 
 --
--- Name: users users_pkey; Type: CONSTRAINT; Schema: public; Owner: arturo
+-- Name: users users_pkey; Type: CONSTRAINT; Schema: public; Owner: -
 --
 
 ALTER TABLE ONLY public.users
@@ -300,28 +201,28 @@ ALTER TABLE ONLY public.users
 
 
 --
--- Name: idx_movements_destination; Type: INDEX; Schema: public; Owner: arturo
+-- Name: idx_movements_destination; Type: INDEX; Schema: public; Owner: -
 --
 
 CREATE INDEX idx_movements_destination ON public.movements USING btree (destination_tortilleria_id);
 
 
 --
--- Name: idx_movements_tort_day; Type: INDEX; Schema: public; Owner: arturo
+-- Name: idx_movements_tort_day; Type: INDEX; Schema: public; Owner: -
 --
 
 CREATE INDEX idx_movements_tort_day ON public.movements USING btree (tortilleria_id, day);
 
 
 --
--- Name: idx_user_tortillerias_tortilleria; Type: INDEX; Schema: public; Owner: arturo
+-- Name: idx_user_tortillerias_tortilleria; Type: INDEX; Schema: public; Owner: -
 --
 
 CREATE INDEX idx_user_tortillerias_tortilleria ON public.user_tortillerias USING btree (tortilleria_id);
 
 
 --
--- Name: movements movements_created_by_fkey; Type: FK CONSTRAINT; Schema: public; Owner: arturo
+-- Name: movements movements_created_by_fkey; Type: FK CONSTRAINT; Schema: public; Owner: -
 --
 
 ALTER TABLE ONLY public.movements
@@ -329,7 +230,7 @@ ALTER TABLE ONLY public.movements
 
 
 --
--- Name: movements movements_destination_tortilleria_id_fkey; Type: FK CONSTRAINT; Schema: public; Owner: arturo
+-- Name: movements movements_destination_tortilleria_id_fkey; Type: FK CONSTRAINT; Schema: public; Owner: -
 --
 
 ALTER TABLE ONLY public.movements
@@ -337,7 +238,7 @@ ALTER TABLE ONLY public.movements
 
 
 --
--- Name: movements movements_tortilleria_id_fkey; Type: FK CONSTRAINT; Schema: public; Owner: arturo
+-- Name: movements movements_tortilleria_id_fkey; Type: FK CONSTRAINT; Schema: public; Owner: -
 --
 
 ALTER TABLE ONLY public.movements
@@ -345,7 +246,7 @@ ALTER TABLE ONLY public.movements
 
 
 --
--- Name: tortillerias tortillerias_main_tortilleria_id_fkey; Type: FK CONSTRAINT; Schema: public; Owner: arturo
+-- Name: tortillerias tortillerias_main_tortilleria_id_fkey; Type: FK CONSTRAINT; Schema: public; Owner: -
 --
 
 ALTER TABLE ONLY public.tortillerias
@@ -353,7 +254,7 @@ ALTER TABLE ONLY public.tortillerias
 
 
 --
--- Name: user_tortillerias user_tortillerias_tortilleria_id_fkey; Type: FK CONSTRAINT; Schema: public; Owner: arturo
+-- Name: user_tortillerias user_tortillerias_tortilleria_id_fkey; Type: FK CONSTRAINT; Schema: public; Owner: -
 --
 
 ALTER TABLE ONLY public.user_tortillerias
@@ -361,7 +262,7 @@ ALTER TABLE ONLY public.user_tortillerias
 
 
 --
--- Name: user_tortillerias user_tortillerias_user_id_fkey; Type: FK CONSTRAINT; Schema: public; Owner: arturo
+-- Name: user_tortillerias user_tortillerias_user_id_fkey; Type: FK CONSTRAINT; Schema: public; Owner: -
 --
 
 ALTER TABLE ONLY public.user_tortillerias
@@ -372,5 +273,5 @@ ALTER TABLE ONLY public.user_tortillerias
 -- PostgreSQL database dump complete
 --
 
-\unrestrict mvjP9ynCBaOAeFtmqJCbRBK9yshHF2UcZaXsSg7K7yvGoyoBO68dorPKBW6LmdO
+\unrestrict jSbfIopqlFBBHeaN1socpKYMCQwCVycOXLzXei9eS0v2HR1ewhY9cVwIAMRHpwk
 

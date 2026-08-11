@@ -1,5 +1,6 @@
 import { useState } from 'react'
 import { getToday } from '../lib/date'
+import { apiUrl } from '../lib/config'
 import type { Tortilleria } from '../types'
 import DateField from './DateField'
 
@@ -74,7 +75,7 @@ export default function QuickEntryForm({
       body.destination_tortilleria_id = Number(destination)
     }
 
-    fetch('/api/movements', {
+    fetch(apiUrl('/api/movements'), {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       credentials: 'include',

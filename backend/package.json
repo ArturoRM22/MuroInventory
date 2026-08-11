@@ -5,11 +5,13 @@
   "main": "src/server.js",
   "scripts": {
     "prod": "NODE_ENV=prod node --watch src/server.js",
-    "dev": "NODE_ENV=dev node --watch src/server.js"
+    "dev": "NODE_ENV=dev node --watch src/server.js",
+    "start": "NODE_ENV=prod node src/server.js"
   },
   "dependencies": {
     "bcryptjs": "^3.0.3",
     "cookie-parser": "^1.4.7",
+    "cors": "^2.8.6",
     "dotenv": "^16.4.5",
     "express": "^4.19.2",
     "jsonwebtoken": "^9.0.2",
