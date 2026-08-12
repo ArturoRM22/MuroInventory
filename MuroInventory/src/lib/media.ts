@@ -13,3 +13,15 @@ export function useMediaQuery(query: string): boolean {
 
   return matches
 }
+
+export function isStandalone(): boolean {
+  return (
+    (window.navigator as Navigator & { standalone?: boolean }).standalone === true ||
+    window.matchMedia('(display-mode: standalone)').matches
+  )
+}
+
+export function useStandalone(): boolean {
+  const mq = useMediaQuery('(display-mode: standalone)')
+  return mq || (window.navigator as Navigator & { standalone?: boolean }).standalone === true
+}
