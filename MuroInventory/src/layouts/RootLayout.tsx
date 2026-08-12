@@ -2,11 +2,13 @@ import { useEffect, useState } from 'react'
 import { useNavigate, Outlet, Link, useLocation } from 'react-router-dom'
 import { useTortilleria } from '../context/tortilleria'
 import { apiUrl } from '../lib/config'
+import { useStandalone } from '../lib/media'
 
 export default function RootLayout() {
   const navigate = useNavigate()
   const location = useLocation()
   const { user, reset } = useTortilleria()
+  const standalone = useStandalone()
   const [menuOpen, setMenuOpen] = useState(false)
 
   useEffect(() => {
@@ -32,7 +34,11 @@ export default function RootLayout() {
 
   return (
     <div className="min-h-screen bg-gray-50">
-      <header className="border-b border-gray-200 bg-white shadow-sm">
+      <header
+        className={`border-b border-gray-200 bg-white shadow-sm ${
+          standalone ? 'pt-[env(safe-area-inset-top)]' : ''
+        }`}
+      >
         <div className="mx-auto flex max-w-6xl items-center justify-between px-4 py-3">
           <Link to="/" className="text-lg font-bold text-gray-800">
             MuroInventory
