@@ -1,42 +1,49 @@
-import { useEffect, useState } from 'react'
-import { useNavigate, Outlet, Link, useLocation } from 'react-router-dom'
-import { useTortilleria } from '../context/tortilleria'
-import { apiUrl } from '../lib/config'
-import { useStandalone } from '../lib/media'
+import { useEffect, useState } from "react";
+import { useNavigate, Outlet, Link, useLocation } from "react-router-dom";
+import { useTortilleria } from "../context/tortilleria";
+import { apiUrl } from "../lib/config";
+import { useStandalone } from "../lib/media";
 
 export default function RootLayout() {
-  const navigate = useNavigate()
-  const location = useLocation()
-  const { user, reset } = useTortilleria()
-  const standalone = useStandalone()
-  const [menuOpen, setMenuOpen] = useState(false)
+  const navigate = useNavigate();
+  const location = useLocation();
+  const { user, reset } = useTortilleria();
+  const standalone = useStandalone();
+  const [menuOpen, setMenuOpen] = useState(false);
 
   useEffect(() => {
-    setMenuOpen(false)
-  }, [location.pathname])
+    setMenuOpen(false);
+  }, [location.pathname]);
+
+  function handleRefresh() {
+    window.location.reload();
+  }
 
   function handleLogout() {
-    setMenuOpen(false)
-    fetch(apiUrl('/api/auth/logout'), { method: 'POST', credentials: 'include' })
+    setMenuOpen(false);
+    fetch(apiUrl("/api/auth/logout"), {
+      method: "POST",
+      credentials: "include",
+    })
       .catch(() => {})
       .finally(() => {
-        sessionStorage.removeItem('user')
-        sessionStorage.removeItem('currentTortilleriaId')
-        reset()
-        navigate('/login', { replace: true })
-      })
+        sessionStorage.removeItem("user");
+        sessionStorage.removeItem("currentTortilleriaId");
+        reset();
+        navigate("/login", { replace: true });
+      });
   }
 
   const navLinkClass =
-    'cursor-pointer rounded-md border border-gray-300 px-3 py-1.5 text-sm text-gray-600 hover:bg-gray-100'
+    "cursor-pointer rounded-md border border-gray-300 px-3 py-1.5 text-sm text-gray-600 hover:bg-gray-100";
   const mobileLinkClass =
-    'block w-full cursor-pointer rounded-md border border-gray-300 px-3 py-2.5 text-center text-sm text-gray-600 hover:bg-gray-100'
+    "block w-full cursor-pointer rounded-md border border-gray-300 px-3 py-2.5 text-center text-sm text-gray-600 hover:bg-gray-100";
 
   return (
     <div className="min-h-screen bg-gray-50">
       <header
         className={`border-b border-gray-200 bg-white shadow-sm ${
-          standalone ? 'pt-[env(safe-area-inset-top)]' : ''
+          standalone ? "pt-[env(safe-area-inset-top)]" : ""
         }`}
       >
         <div className="mx-auto flex max-w-6xl items-center justify-between px-4 py-3">
@@ -50,12 +57,12 @@ export default function RootLayout() {
                 <Link to="/" className={navLinkClass}>
                   Panel
                 </Link>
-                {user.role === 'super' && (
+                {user.role === "super" && (
                   <Link to="/tortillerias" className={navLinkClass}>
                     Tortillerías
                   </Link>
                 )}
-                {(user.role === 'admin' || user.role === 'super') && (
+                {(user.role === "admin" || user.role === "super") && (
                   <Link to="/register" className={navLinkClass}>
                     Registrar Usuario
                   </Link>
@@ -65,40 +72,70 @@ export default function RootLayout() {
                 </button>
               </div>
 
-              <button
-                onClick={() => setMenuOpen((o) => !o)}
-                aria-label={menuOpen ? 'Cerrar menú' : 'Abrir menú'}
-                aria-expanded={menuOpen}
-                className="cursor-pointer rounded-md border border-gray-300 p-2 text-gray-600 hover:bg-gray-100 md:hidden"
-              >
-                {menuOpen ? (
-                  <svg
-                    xmlns="http://www.w3.org/2000/svg"
-                    fill="none"
-                    viewBox="0 0 24 24"
-                    strokeWidth={1.5}
-                    stroke="currentColor"
-                    className="h-5 w-5"
+              <div className="flex items-center gap-2 md:hidden">
+                {standalone && (
+                  <button
+                    onClick={handleRefresh}
+                    title="Actualizar"
+                    aria-label="Actualizar página"
+                    className="flex cursor-pointer items-center justify-center rounded-md border border-blue-200 p-2 text-blue-600 transition hover:bg-blue-50"
                   >
-                    <path strokeLinecap="round" strokeLinejoin="round" d="M6 18 18 6M6 6l12 12" />
-                  </svg>
-                ) : (
-                  <svg
-                    xmlns="http://www.w3.org/2000/svg"
-                    fill="none"
-                    viewBox="0 0 24 24"
-                    strokeWidth={1.5}
-                    stroke="currentColor"
-                    className="h-5 w-5"
-                  >
-                    <path
-                      strokeLinecap="round"
-                      strokeLinejoin="round"
-                      d="M3.75 6.75h16.5M3.75 12h16.5m-16.5 5.25h16.5"
-                    />
-                  </svg>
+                    <svg
+                      xmlns="http://www.w3.org/2000/svg"
+                      fill="none"
+                      viewBox="0 0 24 24"
+                      strokeWidth={1.5}
+                      stroke="currentColor"
+                      className="h-5 w-5"
+                    >
+                      <path
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
+                        d="M16.023 9.348h4.992v-.001M2.985 19.644v-4.992m0 0h4.992m-4.993 0 3.181 3.183a8.25 8.25 0 0 0 13.803-3.7M4.031 9.865a8.25 8.25 0 0 1 13.803-3.7l3.181 3.182m0-4.991v4.99"
+                      />
+                    </svg>
+                  </button>
                 )}
-              </button>
+
+                <button
+                  onClick={() => setMenuOpen((o) => !o)}
+                  aria-label={menuOpen ? "Cerrar menú" : "Abrir menú"}
+                  aria-expanded={menuOpen}
+                  className="cursor-pointer rounded-md border border-gray-300 p-2 text-gray-600 hover:bg-gray-100"
+                >
+                  {menuOpen ? (
+                    <svg
+                      xmlns="http://www.w3.org/2000/svg"
+                      fill="none"
+                      viewBox="0 0 24 24"
+                      strokeWidth={1.5}
+                      stroke="currentColor"
+                      className="h-5 w-5"
+                    >
+                      <path
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
+                        d="M6 18 18 6M6 6l12 12"
+                      />
+                    </svg>
+                  ) : (
+                    <svg
+                      xmlns="http://www.w3.org/2000/svg"
+                      fill="none"
+                      viewBox="0 0 24 24"
+                      strokeWidth={1.5}
+                      stroke="currentColor"
+                      className="h-5 w-5"
+                    >
+                      <path
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
+                        d="M3.75 6.75h16.5M3.75 12h16.5m-16.5 5.25h16.5"
+                      />
+                    </svg>
+                  )}
+                </button>
+              </div>
             </>
           )}
         </div>
@@ -106,16 +143,18 @@ export default function RootLayout() {
         {user && menuOpen && (
           <div className="border-t border-gray-200 px-4 py-3 md:hidden">
             <div className="flex flex-col gap-2">
-              <span className="mb-1 text-sm font-medium text-gray-600">{user.name}</span>
+              <span className="mb-1 text-sm font-medium text-gray-600">
+                {user.name}
+              </span>
               <Link to="/" className={mobileLinkClass}>
                 Panel
               </Link>
-              {user.role === 'super' && (
+              {user.role === "super" && (
                 <Link to="/tortillerias" className={mobileLinkClass}>
                   Tortillerías
                 </Link>
               )}
-              {(user.role === 'admin' || user.role === 'super') && (
+              {(user.role === "admin" || user.role === "super") && (
                 <Link to="/register" className={mobileLinkClass}>
                   Registrar Usuario
                 </Link>
@@ -132,5 +171,5 @@ export default function RootLayout() {
         <Outlet />
       </main>
     </div>
-  )
+  );
 }
